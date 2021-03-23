@@ -12,7 +12,7 @@ impl Watcher {
             match request {
                 WatchRequest::PollTask => {
                     log::debug!("poll");
-                } // _ => {}
+                }
             }
         }
     }
