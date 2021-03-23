@@ -5,7 +5,9 @@ authors = ["HAOYUatHZ <haoyu@protonmail.com>"]
 edition = "2018"
 
 [dependencies]
-
+dotenv = "0.15.0"
+env_logger = "0.5"
+log = "0.4"
 
 [[bin]]
 name = "coordinator"

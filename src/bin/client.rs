@@ -1,3 +1,7 @@
 fn main() {
+    dotenv::dotenv().ok();
+    env_logger::init();
+    log::info!("prover client started");
+
     unimplemented!();
 }
