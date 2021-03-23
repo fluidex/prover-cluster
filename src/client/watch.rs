@@ -11,7 +11,7 @@ impl Watcher {
         while let Some(request) = watch_req.next().await {
             match request {
                 WatchRequest::PollTask => {
-                    log::debug!("poll");
+                    log::debug!("poll task from coordinator");
                 }
             }
         }
