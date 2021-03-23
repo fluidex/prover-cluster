@@ -2,4 +2,12 @@ syntax = "proto3";
 
 package coordinator;
 
-service Coordinator {}
+service Coordinator {
+  rpc GetTask(GetTaskRequest) returns (GetTaskResponse) {}
+  rpc SubmitProof(SubmitProofRequest) returns (SubmitProofResponse) {}
+}
+
+message GetTaskRequest {}
+message GetTaskResponse {}
+message SubmitProofRequest {}
+message SubmitProofResponse {}
