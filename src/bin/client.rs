@@ -11,5 +11,5 @@ fn main() {
     let settings: config::client::Settings = conf.try_into().unwrap();
     log::debug!("{:?}", settings);
 
-    // unimplemented!();
+    unimplemented!();
 }
