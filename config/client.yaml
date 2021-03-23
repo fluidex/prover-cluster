@@ -1,1 +1,2 @@
 prover_id: 1
+upstream: "0.0.0.0:50055"
