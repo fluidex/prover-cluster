@@ -1,0 +1,30 @@
+syntax = "proto3";
+
+package coordinator;
+
+service Coordinator {
+  rpc GetTask(GetTaskRequest) returns (GetTaskResponse) {}
+  rpc SubmitProof(SubmitProofRequest) returns (SubmitProofResponse) {}
+}
+
+message GetTaskRequest {
+    string prover_id = 1;
+    uint64 timestamp = 2;
+    bytes signature = 3;
+}
+message GetTaskResponse {
+    string task_id = 1;
+    string circuit = 2; // better define enum in pb, instead of using string
+    bytes witness = 3;
+}
+
+message SubmitProofRequest {
+    string prover_id = 1;
+    string task_id = 2;
+    bytes proof = 3;
+    uint64 timestamp = 4;
+    bytes signature = 5;
+}
+message SubmitProofResponse {
+    bool valid = 1;
+}
