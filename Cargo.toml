@@ -1,0 +1,16 @@
+[package]
+name = "prover-cluster"
+version = "0.1.0"
+authors = ["HAOYUatHZ <haoyu@protonmail.com>"]
+edition = "2018"
+
+[dependencies]
+
+
+[[bin]]
+name = "coordinator"
+path = "src/bin/coordinator.rs"
+
+[[bin]]
+name = "client"
+path = "src/bin/client.rs"
