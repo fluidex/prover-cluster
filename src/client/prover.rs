@@ -1,3 +1,5 @@
+use std::{thread, time};
+
 pub struct Prover {}
 
 impl Default for Prover {
@@ -11,7 +13,9 @@ impl Prover {
         Self {}
     }
 
-    pub async fn prove_current(&self) -> Result<u64, anyhow::Error> {
+    pub async fn prove(&self) -> Result<u64, anyhow::Error> {
+        let ten_millis = time::Duration::from_millis(10000);
+        thread::sleep(ten_millis);
         Ok(1)
     }
 }
