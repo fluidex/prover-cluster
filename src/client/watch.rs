@@ -1,13 +1,18 @@
+use crate::client::prover::Prover;
 use futures::{channel::mpsc, StreamExt};
 
-pub struct Watcher {}
+pub struct Watcher {
+    prover: Prover,
+}
 
 impl Watcher {
     pub fn new() -> Self {
-        Self {}
+        Self { prover: Prover::default() }
     }
 
     pub async fn run(/*mut*/ self, mut watch_req: mpsc::Receiver<WatchRequest>) {
+        self.prover.prove_current().await;
+
         while let Some(request) = watch_req.next().await {
             match request {
                 WatchRequest::PollTask => {
