@@ -1,17 +1,44 @@
+use crate::client::{GrpcClient, Prover, Settings};
 use futures::{channel::mpsc, StreamExt};
 
-pub struct Watcher {}
+pub struct Watcher {
+    prover: Prover,
+    grpc_client: GrpcClient,
+}
 
 impl Watcher {
-    pub fn new() -> Self {
-        Self {};
+    pub fn from_config(config: &Settings) -> Self {
+        Self {
+            prover: Prover::default(), // TODO: map for different circuit?
+            grpc_client: GrpcClient::from_config(config),
+        }
     }
 
     pub async fn run(/*mut*/ self, mut watch_req: mpsc::Receiver<WatchRequest>) {
         while let Some(request) = watch_req.next().await {
+            // if busy
+            if false {
+                continue;
+            }
+
             match request {
                 WatchRequest::PollTask => {
                     log::debug!("poll task from coordinator");
+
+                    let task = match self.grpc_client.poll_task().await {
+                        Ok(t) => t,
+                        Err(e) => {
+                            log::error!("poll task error {:?}", e);
+                            continue;
+                        }
+                    };
+
+                    match self.prover.prove(task).await {
+                        Ok(proof) => {
+                            self.grpc_client.submit(task, proof);
+                        }
+                        Err(e) => log::error!("{:?}", e),
+                    }
                 }
             }
         }

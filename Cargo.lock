@@ -765,6 +765,7 @@ dependencies = [
 name = "prover-cluster"
 version = "0.1.0"
 dependencies = [
+ "anyhow",
  "config",
  "dotenv",
  "env_logger",
