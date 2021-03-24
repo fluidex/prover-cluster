@@ -11,4 +11,3 @@ impl GrpcClient {
         Self {}
     }
 }
-

@@ -1,4 +1,4 @@
-use crate::client::{grpc_client::GrpcClient, prover::Prover};
+use crate::client::{GrpcClient, Prover};
 use futures::{channel::mpsc, StreamExt};
 
 pub struct Watcher {
@@ -25,9 +25,9 @@ impl Watcher {
                 WatchRequest::PollTask => {
                     log::debug!("poll task from coordinator");
 
-                    // let task = fetch_task();
+                    // let task = self.grpc_client.fetch_task().await;
 
-                    match self.prover.prove().await {
+                    match self.prover.prove(/*task*/).await {
                         Ok(_proof) => {
                             // submit
                         }
