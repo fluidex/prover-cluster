@@ -11,13 +11,21 @@ impl Watcher {
     }
 
     pub async fn run(/*mut*/ self, mut watch_req: mpsc::Receiver<WatchRequest>) {
-        // try prove_and_submit first if there's any current task running
-        self.prover.prove_current().await;
-
         while let Some(request) = watch_req.next().await {
+            // if busy
+            if true {
+                continue;
+            }
+
             match request {
                 WatchRequest::PollTask => {
                     log::debug!("poll task from coordinator");
+
+                    // let task = fetch_task();
+
+                    self.prover.prove().await;
+
+                    // submit
                 }
             }
         }
