@@ -1,5 +1,6 @@
+pub use config::Settings;
 pub use grpc_client::GrpcClient;
-pub use prover::Prover;
+pub use prover::{Proof, Prover};
 pub use task::Task;
 
 pub mod config;

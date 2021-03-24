@@ -18,13 +18,8 @@ fn main() {
     let settings: config::Settings = conf.try_into().unwrap();
     log::debug!("{:?}", settings);
 
-    // let gateway = Gateway::from_config(&settings);
-
+    let watcher = Watcher::from_config(&settings);
     let (req_sender, req_receiver) = mpsc::channel(256);
-
-    // let request_client = RequestClient::new(gateway);
-    let watcher = Watcher::new(/*request_client*/);
-
     main_runtime.spawn(watcher.run(req_receiver));
     let poll_interval = settings.poll_interval();
     main_runtime.block_on(async move {
