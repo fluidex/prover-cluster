@@ -13,7 +13,7 @@ impl Watcher {
     pub async fn run(/*mut*/ self, mut watch_req: mpsc::Receiver<WatchRequest>) {
         while let Some(request) = watch_req.next().await {
             // if busy
-            if true {
+            if false {
                 continue;
             }
 
@@ -23,9 +23,13 @@ impl Watcher {
 
                     // let task = fetch_task();
 
-                    self.prover.prove().await;
+                    match self.prover.prove().await {
+                        Ok(proof) => {
+                            // submit
+                        },
+                        Err(e) => log::error!("{:?}", e),
+                    }
 
-                    // submit
                 }
             }
         }
