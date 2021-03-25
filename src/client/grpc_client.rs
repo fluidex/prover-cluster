@@ -26,10 +26,10 @@ impl GrpcClient {
     }
 
     pub async fn submit(&self, task_id: &str, proof: Proof) -> Result<(), anyhow::Error> {
-        let mut client = ClusterClient::connect(self.upstream).await?;
+        let mut client = ClusterClient::connect(self.upstream.clone()).await?;
 
         let request = tonic::Request::new(SubmitProofRequest {
-            prover_id: self.id,
+            prover_id: self.id.clone(),
             task_id: task_id.to_string(),
             proof: serde_json::ser::to_vec(&proof).unwrap(),
             signature: "".into(), // TODO: remove and use TLS certificates
