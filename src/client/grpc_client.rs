@@ -9,6 +9,7 @@ use bellman_ce::{
 
 pub struct GrpcClient {
     id: String,
+    circuit: Circuit,
     upstream: String,
 }
 
@@ -16,6 +17,7 @@ impl GrpcClient {
     pub fn from_config(config: &Settings) -> Self {
         Self {
             id: config.prover_id.clone(),
+            circuit: config.circuit(),
             upstream: config.upstream.clone(),
         }
     }
@@ -25,7 +27,7 @@ impl GrpcClient {
 
         let request = tonic::Request::new(PollTaskRequest {
             prover_id: self.id.clone(),
-            signature: "".into(), // TODO: remove and use TLS certificates
+            circuit: self.circuit as i32,
             timestamp: chrono::Utc::now().timestamp_millis(),
         });
 
@@ -43,7 +45,6 @@ impl GrpcClient {
             prover_id: self.id.clone(),
             task_id: task_id.to_string(),
             proof: serde_json::ser::to_vec(&serialized_proof).unwrap(),
-            signature: "".into(), // TODO: remove and use TLS certificates
             timestamp: chrono::Utc::now().timestamp_millis(),
         });
 
@@ -53,6 +54,7 @@ impl GrpcClient {
         // If error, log error here instead of outer. Because we want an async submission.
         match client.submit_proof(request).await {
             Ok(_) => {
+                // TODO: is_valid?
                 log::info!("prover({:?}) submit result for task({:?}) successfully", self.id, task_id);
                 Ok(())
             }
