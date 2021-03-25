@@ -1,6 +1,6 @@
 pub use config::Settings;
 pub use grpc_client::GrpcClient;
-pub use prover::{Proof, Prover};
+pub use prover::Prover;
 
 pub mod config;
 pub mod grpc_client;

@@ -1,7 +1,11 @@
-use crate::client::{Proof, Settings};
+use crate::client::Settings;
 use crate::pb::cluster_client::ClusterClient;
 use crate::pb::*;
 use anyhow::anyhow;
+use bellman_ce::{
+    pairing::bn256::Bn256,
+    plonk::better_cs::{cs::PlonkCsWidth4WithNextStepParams, keys::Proof},
+};
 
 pub struct GrpcClient {
     id: String,
@@ -32,13 +36,13 @@ impl GrpcClient {
         }
     }
 
-    pub async fn submit(&self, task_id: &str, proof: Proof) -> Result<(), anyhow::Error> {
+    pub async fn submit(&self, task_id: &str, proof: Proof<Bn256, PlonkCsWidth4WithNextStepParams>) -> Result<(), anyhow::Error> {
+        let (_, serialized_proof) = bellman_vk_codegen::serialize_proof(&proof);
         let mut client = ClusterClient::connect(self.upstream.clone()).await?;
-
         let request = tonic::Request::new(SubmitProofRequest {
             prover_id: self.id.clone(),
             task_id: task_id.to_string(),
-            proof: serde_json::ser::to_vec(&proof).unwrap(),
+            proof: serde_json::ser::to_vec(&serialized_proof).unwrap(),
             signature: "".into(), // TODO: remove and use TLS certificates
             timestamp: chrono::Utc::now().timestamp_millis(),
         });
