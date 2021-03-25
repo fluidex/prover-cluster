@@ -1,20 +1,20 @@
 syntax = "proto3";
 
-package coordinator;
+package cluster;
 
-service Coordinator {
+service Cluster {
   rpc GetTask(GetTaskRequest) returns (GetTaskResponse) {}
   rpc SubmitProof(SubmitProofRequest) returns (SubmitProofResponse) {}
 }
 
 message GetTaskRequest {
     string prover_id = 1;
-    uint64 timestamp = 2;
+    int64 timestamp = 2; // UTC timestamp in milliseconds
     bytes signature = 3;
 }
 message GetTaskResponse {
     string task_id = 1;
-    string circuit = 2; // better define enum in pb, instead of using string
+    string circuit = 2; // TODO: use enum
     bytes witness = 3;
 }
 
@@ -22,7 +22,7 @@ message SubmitProofRequest {
     string prover_id = 1;
     string task_id = 2;
     bytes proof = 3;
-    uint64 timestamp = 4;
+    int64 timestamp = 4; // UTC timestamp in milliseconds
     bytes signature = 5;
 }
 message SubmitProofResponse {
