@@ -53,9 +53,9 @@ impl GrpcClient {
 
         // If error, log error here instead of outer. Because we want an async submission.
         match client.submit_proof(request).await {
-            Ok(_) => {
-                // TODO: is_valid?
+            Ok(resp) => {
                 log::info!("prover({:?}) submit result for task({:?}) successfully", self.id, task_id);
+                log::info!("task({:?}) submission result valid: {:?}", task_id, resp.into_inner().valid);
                 Ok(())
             }
             Err(e) => {
