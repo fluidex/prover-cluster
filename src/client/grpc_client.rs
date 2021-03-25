@@ -35,17 +35,13 @@ impl GrpcClient {
         log::debug!("proof: {:?}", proof);
 
         // if error, log error here instead of outer. because of we want an async submission.
-        match client
-            .submit_proof(request)
-            .await
-            .map_err(|e| format_err!("prover({:?}) submit result for task({:?}) error {:?}", self.id, task_id, e))
-        {
+        match client.submit_proof(request).await.map_err(|e| format_err!("{:?}", e)) {
             Ok(_) => {
                 log::info!("prover({:?}) submit result for task({:?}) successfully", self.id, task_id);
                 Ok(())
             }
             Err(e) => {
-                log::error!("{}", e);
+                log::error!("prover({:?}) submit result for task({:?}) error {:?}", self.id, task_id, e);
                 return Err(e);
             }
         }
