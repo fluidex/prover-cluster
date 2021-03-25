@@ -17,9 +17,10 @@ impl Settings {
     }
 
     pub fn circuit(&self) -> Circuit {
-        match self.circuit.as_str() {
+    	let circuit = self.circuit.as_str();
+        match circuit {
             "Block" | "block" => Circuit::Block,
-            _ => panic!("unknown circuit: {:?}", &self.circuit),
+            _ => panic!("unknown circuit: {:?}", circuit),
         }
     }
 }
