@@ -14,7 +14,7 @@ message GetTaskRequest {
 }
 message GetTaskResponse {
     string task_id = 1;
-    string circuit = 2; // better define enum in pb, instead of using string
+    string circuit = 2; // TODO: use enum
     bytes witness = 3;
 }
 
