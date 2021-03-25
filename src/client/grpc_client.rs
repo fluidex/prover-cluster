@@ -16,7 +16,6 @@ impl GrpcClient {
         }
     }
 
-    // TODO:
     pub async fn poll_task(&self) -> Result<Task, anyhow::Error> {
         let mut client = ClusterClient::connect(self.upstream.clone()).await?;
 
@@ -28,7 +27,7 @@ impl GrpcClient {
 
         log::info!("prover({:?}) polling task", self.id);
         match client.poll_task(request).await {
-            Ok(t) => t.into(), // TODO:
+            Ok(t) => Ok(t.into_inner()),
             Err(e) => Err(anyhow!(e)),
         }
     }
