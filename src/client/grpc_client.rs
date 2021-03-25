@@ -28,12 +28,17 @@ impl GrpcClient {
     pub async fn submit(&self, task_id: &str, proof: Proof) -> Result<(), anyhow::Error> {
         let mut client = ClusterClient::connect(self.upstream).await?;
 
-        let request = tonic::Request::new(SubmitProofRequest {});
+        let request = tonic::Request::new(SubmitProofRequest {
+            prover_id: self.id,
+            task_id: task_id.to_string(),
+            signature: "".into(), // TODO: implement signing logic 
+            timestamp: chrono::Utc::now().timestamp_millis(),
+        });
 
         log::info!("prover({:?}) submiting result for task({:?})", self.id, task_id);
         log::debug!("proof: {:?}", proof);
 
-        // if error, log error here instead of outer. because of we want an async submission.
+        // If error, log error here instead of outer. Because we want an async submission.
         match client.submit_proof(request).await.map_err(|e| format_err!("{:?}", e)) {
             Ok(_) => {
                 log::info!("prover({:?}) submit result for task({:?}) successfully", self.id, task_id);
