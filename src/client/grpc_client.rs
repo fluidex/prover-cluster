@@ -1,6 +1,6 @@
 use crate::client::{Proof, Settings};
-use crate::cluster::cluster_client::ClusterClient;
-use crate::cluster::*;
+use crate::pb::cluster_client::ClusterClient;
+use crate::pb::*;
 use anyhow::anyhow;
 
 pub struct GrpcClient {

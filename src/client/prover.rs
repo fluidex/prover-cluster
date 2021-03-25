@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 use std::{thread, time};
-use crate::cluster::*;
+use crate::pb::*;
 
 pub struct Prover {}
 

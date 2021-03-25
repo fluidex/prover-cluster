@@ -1,3 +1,3 @@
 pub mod client;
-pub mod cluster;
+pub mod pb;
 pub mod coordinator;
