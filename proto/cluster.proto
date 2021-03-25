@@ -3,7 +3,7 @@ syntax = "proto3";
 package cluster;
 
 service Cluster {
-  rpc PollTask(PollTaskRequest) returns (PollTaskResponse) {}
+  rpc PollTask(PollTaskRequest) returns (Task) {}
   rpc SubmitProof(SubmitProofRequest) returns (SubmitProofResponse) {}
 }
 
@@ -12,8 +12,8 @@ message PollTaskRequest {
     int64 timestamp = 2; // UTC timestamp in milliseconds
     bytes signature = 3;
 }
-message PollTaskResponse {
-    string task_id = 1;
+message Task {
+    string id = 1;
     string circuit = 2; // TODO: use enum
     bytes witness = 3;
 }

@@ -1,5 +1,4 @@
 use self::cluster::cluster_client::ClusterClient;
-use self::cluster::PollTaskResponse as Task;
 use self::cluster::*;
 use crate::client::{Proof, Settings};
 use anyhow::anyhow;
@@ -24,7 +23,7 @@ impl GrpcClient {
     // TODO:
     pub async fn poll_task(&self) -> Result<Task, anyhow::Error> {
         Ok(Task {
-            task_id: "task_id".to_string(),
+            id: "task_id".to_string(),
             circuit: "circuit".to_string(),
             witness: "witness".to_string(),
         })
