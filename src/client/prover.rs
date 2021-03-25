@@ -1,3 +1,4 @@
+use crate::client::Settings;
 use crate::pb::*;
 use bellman_ce::{
     pairing::bn256::Bn256,
@@ -7,14 +8,8 @@ use std::{thread, time};
 
 pub struct Prover {}
 
-impl Default for Prover {
-    fn default() -> Self {
-        Self::new()
-    }
-}
-
 impl Prover {
-    pub fn new() -> Self {
+    pub fn from_config(_config: &Settings) -> Self {
         Self {}
     }
 

@@ -9,7 +9,7 @@ pub struct Watcher {
 impl Watcher {
     pub fn from_config(config: &Settings) -> Self {
         Self {
-            prover: Prover::default(), // TODO: map for different circuits?
+            prover: Prover::from_config(config),
             grpc_client: GrpcClient::from_config(config),
         }
     }
