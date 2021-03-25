@@ -15,13 +15,9 @@ pub struct GrpcClient {
 
 impl GrpcClient {
     pub fn from_config(config: &Settings) -> Self {
-        // match expr {
-        //     Some(expr) => expr,
-        //     None => expr,
-        // }
-
         Self {
             id: config.prover_id.clone(),
+            circuit: config.circuit(),
             upstream: config.upstream.clone(),
         }
     }
