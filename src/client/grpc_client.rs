@@ -7,21 +7,21 @@ pub mod cluster {
 }
 
 pub struct GrpcClient {
-    id: u64,
+    id: String,
     upstream: String,
 }
 
 impl GrpcClient {
     pub fn from_config(config: &Settings) -> Self {
         Self {
-            id: config.prover_id,
+            id: config.prover_id.clone(),
             upstream: config.upstream.clone(),
         }
     }
 
     // TODO:
     pub async fn poll_task(&self) -> Result<Task, anyhow::Error> {
-        Ok(Task { id: 1 })
+        Ok(Task { id: 1.into() })
     }
 
     // TODO: only pass task_id here
