@@ -1,6 +1,7 @@
 use self::cluster::cluster_client::ClusterClient;
+use self::cluster::PollTaskResponse as Task;
 use self::cluster::*;
-use crate::client::{Proof, Settings, Task};
+use crate::client::{Proof, Settings};
 use anyhow::anyhow;
 
 pub mod cluster {
@@ -22,7 +23,11 @@ impl GrpcClient {
 
     // TODO:
     pub async fn poll_task(&self) -> Result<Task, anyhow::Error> {
-        Ok(Task { id: "1".to_string() })
+        Ok(Task {
+            task_id: "task_id".to_string(),
+            circuit: "circuit".to_string(),
+            witness: "witness".to_string(),
+        })
     }
 
     pub async fn submit(&self, task_id: &str, proof: Proof) -> Result<(), anyhow::Error> {
