@@ -1,10 +1,8 @@
 use crate::pb::*;
-use anyhow::anyhow;
 use bellman_ce::{
     pairing::bn256::Bn256,
     plonk::better_cs::{cs::PlonkCsWidth4WithNextStepParams, keys::Proof},
 };
-use serde::{Deserialize, Serialize};
 use std::{thread, time};
 
 pub struct Prover {}
