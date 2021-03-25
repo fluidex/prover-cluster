@@ -25,7 +25,7 @@ impl GrpcClient {
         Ok(Task {
             id: "task_id".to_string(),
             circuit: "circuit".to_string(),
-            witness: "witness".to_string(),
+            witness: serde_json::ser::to_vec("witness").unwrap(),
         })
     }
 
