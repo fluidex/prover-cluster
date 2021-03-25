@@ -16,7 +16,7 @@ impl Watcher {
 
     pub async fn run(/*mut*/ self, mut watch_req: mpsc::Receiver<WatchRequest>) {
         while let Some(request) = watch_req.next().await {
-            // if busy
+            // TODO: if busy... (atomic/lock)
             if false {
                 continue;
             }
