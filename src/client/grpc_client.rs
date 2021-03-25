@@ -47,7 +47,7 @@ impl GrpcClient {
             }
             Err(e) => {
                 log::error!("prover({:?}) submit result for task({:?}) error {:?}", self.id, task_id, e);
-                return Err(anyhow!(e));
+                Err(anyhow!(e))
             }
         }
     }
