@@ -21,22 +21,22 @@ impl GrpcClient {
 
     // TODO:
     pub async fn poll_task(&self) -> Result<Task, anyhow::Error> {
-        Ok(Task { id: 1.into() })
+        Ok(Task { id: "1".to_string() })
     }
 
     // TODO: only pass task_id here
-    pub async fn submit(&self, task: Task, proof: Proof) -> Result<(), anyhow::Error> {
+    pub async fn submit(&self, task_id: &str, proof: Proof) -> Result<(), anyhow::Error> {
         let mut client = ClusterClient::connect(self.upstream).await?;
 
         let request = tonic::Request::new(SubmitProofRequest {});
 
-        log::info!("prover({:?}) submiting result for task({:?})", self.id, task.id);
+        log::info!("prover({:?}) submiting result for task({:?})", self.id, task_id);
         log::debug!("proof: {:?}", proof);
 
         // if error, log error here instead of outer. because of we want an async submission.
         match client.submit_proof(request).await {
             Ok(_) => {
-                log::info!("prover({:?}) submit result for task({:?}) successfully", self.id, task.id);
+                log::info!("prover({:?}) submit result for task({:?}) successfully", self.id, task_id);
                 Ok(())
             }
             Err(e) => {

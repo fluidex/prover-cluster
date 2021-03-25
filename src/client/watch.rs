@@ -33,9 +33,9 @@ impl Watcher {
                         }
                     };
 
-                    match self.prover.prove(task).await {
+                    match self.prover.prove(&task).await {
                         Ok(proof) => {
-                            self.grpc_client.submit(task, proof);
+                            self.grpc_client.submit(&task.id, proof);
                         }
                         Err(e) => log::error!("{:?}", e),
                     }
