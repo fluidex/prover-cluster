@@ -6,6 +6,7 @@ edition = "2018"
 
 [dependencies]
 anyhow = "1.0"
+bellman_ce = { git = "https://github.com/matter-labs/bellman", branch = "beta", default-features = false, features = ["plonk"] } # active features depend on build type
 config_rs = { package = "config", version = "0.10.1" }
 chrono = "0.4.19"
 dotenv = "0.15.0"
