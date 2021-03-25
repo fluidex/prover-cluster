@@ -1,6 +1,7 @@
 use self::cluster::cluster_client::ClusterClient;
 use self::cluster::*;
 use crate::client::{Proof, Settings, Task};
+use anyhow::format_err;
 
 pub mod cluster {
     tonic::include_proto!("cluster");
@@ -34,14 +35,18 @@ impl GrpcClient {
         log::debug!("proof: {:?}", proof);
 
         // if error, log error here instead of outer. because of we want an async submission.
-        match client.submit_proof(request).await {
+        match client
+            .submit_proof(request)
+            .await
+            .map_err(|e| format_err!("prover({:?}) submit result for task({:?}) error {:?}", self.id, task_id, e))
+        {
             Ok(_) => {
                 log::info!("prover({:?}) submit result for task({:?}) successfully", self.id, task_id);
                 Ok(())
             }
             Err(e) => {
                 log::error!("{}", e);
-                return Err::new(e);
+                return Err(e);
             }
         }
     }
