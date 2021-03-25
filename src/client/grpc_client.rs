@@ -31,6 +31,7 @@ impl GrpcClient {
         let request = tonic::Request::new(SubmitProofRequest {
             prover_id: self.id,
             task_id: task_id.to_string(),
+            proof: serde_json::ser::to_vec(&proof).unwrap(),
             signature: "".into(), // TODO: implement signing logic
             timestamp: chrono::Utc::now().timestamp_millis(),
         });
