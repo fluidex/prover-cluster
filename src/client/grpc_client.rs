@@ -24,6 +24,7 @@ impl GrpcClient {
         Ok(Task { id: 1 })
     }
 
+    // TODO: only pass task_id here
     pub async fn submit(&self, task: Task, proof: Proof) -> Result<(), anyhow::Error> {
         let mut client = ClusterClient::connect(self.upstream).await?;
 
