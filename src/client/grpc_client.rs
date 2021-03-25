@@ -1,11 +1,7 @@
-use self::cluster::cluster_client::ClusterClient;
-use self::cluster::*;
-use crate::client::{Proof, Settings, Task};
+use crate::client::{Proof, Settings};
+use crate::pb::cluster_client::ClusterClient;
+use crate::pb::*;
 use anyhow::anyhow;
-
-pub mod cluster {
-    tonic::include_proto!("cluster");
-}
 
 pub struct GrpcClient {
     id: String,
@@ -22,7 +18,11 @@ impl GrpcClient {
 
     // TODO:
     pub async fn poll_task(&self) -> Result<Task, anyhow::Error> {
-        Ok(Task { id: "1".to_string() })
+        Ok(Task {
+            id: "task_id".to_string(),
+            circuit: "circuit".to_string(),
+            witness: serde_json::ser::to_vec("witness").unwrap(),
+        })
     }
 
     pub async fn submit(&self, task_id: &str, proof: Proof) -> Result<(), anyhow::Error> {
@@ -47,7 +47,7 @@ impl GrpcClient {
             }
             Err(e) => {
                 log::error!("prover({:?}) submit result for task({:?}) error {:?}", self.id, task_id, e);
-                return Err(anyhow!(e));
+                Err(anyhow!(e))
             }
         }
     }

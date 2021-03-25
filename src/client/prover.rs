@@ -1,4 +1,4 @@
-use crate::client::Task;
+use crate::pb::*;
 use serde::{Deserialize, Serialize};
 use std::{thread, time};
 
