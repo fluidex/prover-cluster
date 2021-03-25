@@ -1,11 +1,7 @@
-use self::cluster::cluster_client::ClusterClient;
-use self::cluster::*;
 use crate::client::{Proof, Settings};
+use crate::cluster::cluster_client::ClusterClient;
+use crate::cluster::*;
 use anyhow::anyhow;
-
-pub mod cluster {
-    tonic::include_proto!("cluster");
-}
 
 pub struct GrpcClient {
     id: String,
