@@ -7,13 +7,19 @@ service Cluster {
   rpc SubmitProof(SubmitProofRequest) returns (SubmitProofResponse) {}
 }
 
+enum Circuit {
+  BLOCK = 0;
+}
+
 message PollTaskRequest {
     string prover_id = 1;
-    int64 timestamp = 2; // UTC timestamp in milliseconds
+    Circuit circuit = 2;
+    int64 timestamp = 3; // UTC timestamp in milliseconds
 }
+
 message Task {
     string id = 1;
-    string circuit = 2; // TODO: use enum
+    Circuit circuit = 2;
     bytes witness = 3;
 }
 
@@ -23,6 +29,7 @@ message SubmitProofRequest {
     bytes proof = 3;
     int64 timestamp = 4; // UTC timestamp in milliseconds
 }
+
 message SubmitProofResponse {
     bool valid = 1;
 }
