@@ -18,11 +18,19 @@ impl GrpcClient {
 
     // TODO:
     pub async fn poll_task(&self) -> Result<Task, anyhow::Error> {
-        Ok(Task {
-            id: "task_id".to_string(),
-            circuit: "circuit".to_string(),
-            witness: serde_json::ser::to_vec("witness").unwrap(),
-        })
+        let mut client = ClusterClient::connect(self.upstream.clone()).await?;
+
+        let request = tonic::Request::new(PollTaskRequest {
+            prover_id: self.id.clone(),
+            signature: "".into(), // TODO: remove and use TLS certificates
+            timestamp: chrono::Utc::now().timestamp_millis(),
+        });
+
+        log::info!("prover({:?}) polling task", self.id);
+        match client.poll_task(request).await {
+            Ok(t) => t.into(), // TODO:
+            Err(e) => Err(anyhow!(e)),
+        }
     }
 
     pub async fn submit(&self, task_id: &str, proof: Proof) -> Result<(), anyhow::Error> {
