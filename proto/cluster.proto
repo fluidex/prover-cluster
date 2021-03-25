@@ -1,8 +1,8 @@
 syntax = "proto3";
 
-package coordinator;
+package cluster;
 
-service Coordinator {
+service Cluster {
   rpc GetTask(GetTaskRequest) returns (GetTaskResponse) {}
   rpc SubmitProof(SubmitProofRequest) returns (SubmitProofResponse) {}
 }
