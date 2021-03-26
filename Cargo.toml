@@ -14,6 +14,7 @@ dotenv = "0.15.0"
 env_logger = "0.5"
 futures = "0.3"
 log = "0.4"
+plonkit = { git = "https://github.com/Fluidex/plonkit.git" }
 prost = "0.7.0"
 prost-types = "0.7.0"
 serde = { version = "1.0.124", features = ["derive"] }
