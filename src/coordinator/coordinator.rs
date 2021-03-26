@@ -4,7 +4,7 @@ use crate::pb::*;
 use std::net::SocketAddr;
 use tonic::{Request, Response, Status};
 
-#[derive(Debug, Default)]
+#[derive(Debug)]
 pub struct Coordinator {
     pub addr: SocketAddr,
 }
@@ -15,15 +15,19 @@ impl Coordinator {
             addr: "[::1]:50051".parse().unwrap(),
         }
     }
+
+    pub fn addr(&self) -> SocketAddr {
+        self.addr
+    }
 }
 
 #[tonic::async_trait]
 impl Cluster for Coordinator {
-    async fn poll_task(&self, request: Request<PollTaskRequest>) -> Result<Response<Task>, Status> {
+    async fn poll_task(&self, _request: Request<PollTaskRequest>) -> Result<Response<Task>, Status> {
         unimplemented!()
     }
 
-    async fn submit_proof(&self, request: Request<SubmitProofRequest>) -> Result<Response<SubmitProofResponse>, Status> {
+    async fn submit_proof(&self, _request: Request<SubmitProofRequest>) -> Result<Response<SubmitProofResponse>, Status> {
         unimplemented!()
     }
 }

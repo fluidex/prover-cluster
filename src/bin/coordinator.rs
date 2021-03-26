@@ -1,7 +1,6 @@
 use prover_cluster::coordinator::{config, Coordinator};
 use prover_cluster::pb::cluster_server::ClusterServer;
-use prover_cluster::pb::*;
-use tonic::{transport::Server, Request, Response, Status};
+use tonic::transport::Server;
 
 fn main() {
     dotenv::dotenv().ok();
@@ -15,5 +14,5 @@ fn main() {
     log::debug!("{:?}", settings);
 
     let coordinator = Coordinator::from_config(&settings);
-    Server::builder().add_service(ClusterServer::new(coordinator)).serve(coordinator.addr)/*.await*/;
+    Server::builder().add_service(ClusterServer::new(coordinator).serve(coordinator.addr()))/*.await*/;
 }
