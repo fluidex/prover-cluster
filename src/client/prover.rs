@@ -22,7 +22,7 @@ impl Prover {
             aux_offset: plonkit::plonk::AUX_OFFSET,
         };
         let setup = plonkit::plonk::SetupForProver::prepare_setup_for_prover(
-            circuit.clone(),
+            circuit,
             plonkit::reader::load_key_monomial_form(&config.srs_monomial_form),
             plonkit::reader::maybe_load_key_lagrange_form(Some(config.srs_lagrange_form.clone())),
         )
@@ -30,8 +30,8 @@ impl Prover {
 
         Self {
             circuit_type: config.circuit(),
-            r1cs: r1cs,
-            setup: setup,
+            r1cs,
+            setup,
         }
     }
 
