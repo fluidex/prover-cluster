@@ -22,7 +22,7 @@ impl Prover {
             aux_offset: plonkit::plonk::AUX_OFFSET,
         };
         let setup = plonkit::plonk::SetupForProver::prepare_setup_for_prover(
-            circuit.clone(),
+            circuit,
             plonkit::reader::load_key_monomial_form(&config.srs_monomial_form),
             plonkit::reader::maybe_load_key_lagrange_form(Some(config.srs_lagrange_form.clone())),
         )
@@ -30,8 +30,8 @@ impl Prover {
 
         Self {
             circuit_type: config.circuit(),
-            r1cs: r1cs,
-            setup: setup,
+            r1cs,
+            setup,
         }
     }
 
@@ -43,7 +43,8 @@ impl Prover {
             return Err(anyhow!("unsupported task circuit!"));
         }
 
-        let witness = plonkit::reader::load_witness_from_array::<Bn256>(task.witness.clone()).expect("load witness.");
+        let witness =
+            plonkit::reader::load_witness_from_array::<Bn256>(task.witness.clone()).map_err(|e| anyhow!("load witness error: {:?}", e))?;
         let circuit = plonkit::circom_circuit::CircomCircuit {
             r1cs: self.r1cs.clone(),
             witness: Some(witness),
