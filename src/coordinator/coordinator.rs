@@ -25,13 +25,11 @@ impl Cluster for Coordinator {
         //     circuit: 1,
         //     witness: vec![],
         // }))
-
         unimplemented!()
     }
 
     async fn submit_proof(&self, _request: Request<SubmitProofRequest>) -> Result<Response<SubmitProofResponse>, Status> {
         // Ok(Response::new(SubmitProofResponse { valid: true }))
-
         unimplemented!()
     }
 }
