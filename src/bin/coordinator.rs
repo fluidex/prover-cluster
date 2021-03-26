@@ -14,5 +14,5 @@ fn main() {
     log::debug!("{:?}", settings);
 
     let coordinator = Coordinator::from_config(&settings);
-    Server::builder().add_service(ClusterServer::new(coordinator).serve(coordinator.addr()))/*.await*/;
+    Server::builder().add_service(ClusterServer::new(coordinator)).serve(coordinator.addr())/*.await*/;
 }
