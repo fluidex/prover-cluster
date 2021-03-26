@@ -1,4 +1,4 @@
-use crate::coordinator::{GateKeeper, Settings};
+use crate::coordinator::Settings;
 use crate::pb::cluster_server::Cluster;
 use crate::pb::*;
 use std::collections::BTreeMap;
@@ -13,8 +13,6 @@ use tonic::{Request, Response, Status};
 pub struct Coordinator {
     pub addr: SocketAddr,
     tasks: BTreeMap<String, Task>,
-    // circuit_tasks: HashMap<Circuit, Task>,
-    // gate_keeper: GateKeeper,
 }
 
 impl Coordinator {
@@ -22,7 +20,6 @@ impl Coordinator {
         Self {
             addr: format!("[::1]:{:?}", config.port).parse().unwrap(),
             tasks: BTreeMap::new(),
-            // gate_keeper: GateKeeper::from_config(config),
         }
     }
 }
@@ -30,16 +27,13 @@ impl Coordinator {
 #[tonic::async_trait]
 impl Cluster for Coordinator {
     async fn poll_task(&self, request: Request<PollTaskRequest>) -> Result<Response<Task>, Status> {
-        let tasks: BTreeMap<String, Task> = self
-            .tasks
-            .iter()
-            .filter(|(id, t)| t.circuit == request.into_inner().circuit)
-            .collect();
+        let circuit = request.into_inner().circuit;
+        let tasks: BTreeMap<&String, &Task> = self.tasks.iter().filter(|(_id, t)| t.circuit == circuit).collect();
         match tasks.iter().next() {
             None => Err(tonic::Status::new(tonic::Code::Unknown, "no task ready to prove")),
-            Some((id, t)) => {
+            Some((_id, t)) => {
                 // TODO: mark task
-                Ok(Response::new(*t))
+                Ok(Response::new((*t).clone()))
             }
         }
     }
