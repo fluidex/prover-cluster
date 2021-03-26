@@ -1,8 +1,8 @@
-use tonic::{transport::Server, Request, Response, Status};
 use crate::coordinator::Settings;
-use crate::pb::cluster_server::{Cluster};
+use crate::pb::cluster_server::Cluster;
 use crate::pb::*;
 use std::net::SocketAddr;
+use tonic::{Request, Response, Status};
 
 #[derive(Debug, Default)]
 pub struct Coordinator {
@@ -19,17 +19,11 @@ impl Coordinator {
 
 #[tonic::async_trait]
 impl Cluster for Coordinator {
-    async fn poll_task(
-        &self,
-        request: Request<PollTaskRequest>,
-    ) -> Result<Response<Task>, Status> {
-    	unimplemented!()
+    async fn poll_task(&self, request: Request<PollTaskRequest>) -> Result<Response<Task>, Status> {
+        unimplemented!()
     }
 
-    async fn submit_proof(
-        &self,
-        request: Request<SubmitProofRequest>,
-    ) -> Result<Response<SubmitProofResponse>, Status> {
-    	unimplemented!()
+    async fn submit_proof(&self, request: Request<SubmitProofRequest>) -> Result<Response<SubmitProofResponse>, Status> {
+        unimplemented!()
     }
 }
