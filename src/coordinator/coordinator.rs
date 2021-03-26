@@ -26,14 +26,16 @@ impl Coordinator {
 #[tonic::async_trait]
 impl Cluster for Coordinator {
     async fn poll_task(&self, request: Request<PollTaskRequest>) -> Result<Response<Task>, Status> {
-    	// TODO: can we remove this let?
-        let circuit = request.into_inner().circuit;
+        let circuit = Circuit::from_i32(request.into_inner().circuit)
+            .ok_or_else(|| tonic::Status::new(tonic::Code::InvalidArgument, "unknown circuit"))?;
+
         match self.gate_keeper.fetch_task(circuit) {
-            None => Err(tonic::Status::new(tonic::Code::Unknown, "no task ready to prove")),
-            Some((_id, t)) => {
-                // TODO: mark task
-                Ok(Response::new((*t).clone()))
-            }
+            // None => Err(tonic::Status::new(tonic::Code::Unknown, "no task ready to prove")),
+            // Some((_id, t)) => {
+            //     // TODO: mark task
+            //     Ok(Response::new((*t).clone()))
+            // }
+            _ => Err(tonic::Status::new(tonic::Code::Unknown, "no task ready to prove")),
         }
     }
 
