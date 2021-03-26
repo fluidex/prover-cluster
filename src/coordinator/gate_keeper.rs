@@ -12,8 +12,13 @@ impl GateKeeper {
         Self { tasks: BTreeMap::new() }
     }
 
-    pub fn fetch_task(&self, circuit: Circuit) -> Option<(&String, &Task)> {
-        let tasks: BTreeMap<&String, &Task> = self.tasks.iter().filter(|(_id, t)| t.circuit == circuit as i32).collect();
-        tasks.iter().next()
+    pub fn fetch_task(&self, circuit: Circuit) -> Option<(String, Task)> {
+        let tasks: BTreeMap<String, Task> = self
+            .tasks
+            .clone()
+            .into_iter()
+            .filter(|(_id, t)| t.circuit == circuit as i32)
+            .collect();
+        tasks.into_iter().next()
     }
 }

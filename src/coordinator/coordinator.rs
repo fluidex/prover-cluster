@@ -33,7 +33,7 @@ impl Cluster for Coordinator {
             None => Err(tonic::Status::new(tonic::Code::Unknown, "no task ready to prove")),
             Some((_id, t)) => {
                 // TODO: mark task
-                Ok(Response::new((*t).clone()))
+                Ok(Response::new((t).clone()))
             }
         }
     }
