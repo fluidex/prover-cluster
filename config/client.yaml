@@ -1,4 +1,7 @@
 prover_id: 1
-circuit: "block"
 upstream: "http://0.0.0.0:50055"
 poll_interval: 1000
+circuit: "block"
+r1cs: "block.r1cs"
+srs_monomial_form: "setup_2^20.key"
+srs_lagrange_form: "setup_2^20_lagrange.key"

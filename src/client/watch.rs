@@ -9,14 +9,14 @@ pub struct Watcher {
 impl Watcher {
     pub fn from_config(config: &Settings) -> Self {
         Self {
-            prover: Prover::default(), // TODO: map for different circuits?
+            prover: Prover::from_config(config),
             grpc_client: GrpcClient::from_config(config),
         }
     }
 
     pub async fn run(/*mut*/ self, mut watch_req: mpsc::Receiver<WatchRequest>) {
         while let Some(request) = watch_req.next().await {
-            // if busy
+            // TODO: if busy... (atomic/lock)
             if false {
                 continue;
             }
