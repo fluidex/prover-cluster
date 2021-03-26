@@ -20,16 +20,16 @@ impl Coordinator {
 #[tonic::async_trait]
 impl Cluster for Coordinator {
     async fn poll_task(&self, _request: Request<PollTaskRequest>) -> Result<Response<Task>, Status> {
-        // Ok(Response::new(Task {
-        //     id: 1.to_string(),
-        //     circuit: 1,
-        //     witness: vec![],
-        // }))
-        unimplemented!()
+        Ok(Response::new(Task {
+            id: 1.to_string(),
+            circuit: 1,
+            witness: vec![],
+        }))
+        // unimplemented!()
     }
 
     async fn submit_proof(&self, _request: Request<SubmitProofRequest>) -> Result<Response<SubmitProofResponse>, Status> {
-        // Ok(Response::new(SubmitProofResponse { valid: true }))
-        unimplemented!()
+        Ok(Response::new(SubmitProofResponse { valid: true }))
+        // unimplemented!()
     }
 }
