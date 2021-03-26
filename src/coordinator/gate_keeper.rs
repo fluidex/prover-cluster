@@ -22,5 +22,5 @@ impl GateKeeper {
         tasks.into_iter().next()
     }
 
-    pub fn assign(&self, _prover_id: String, _task_id: String, _task: Task) {}
+    pub fn assign(&self, _prover_id: String, _task_id: String, _task: &Task) {}
 }

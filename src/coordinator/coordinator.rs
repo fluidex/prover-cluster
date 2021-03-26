@@ -33,7 +33,7 @@ impl Cluster for Coordinator {
         match self.gate_keeper.fetch_task(circuit) {
             None => Err(tonic::Status::new(tonic::Code::Unknown, "no task ready to prove")),
             Some((task_id, task)) => {
-                self.gate_keeper.assign(request.prover_id, task_id, task.clone());
+                self.gate_keeper.assign(request.prover_id, task_id, &task);
                 Ok(Response::new(task))
             }
         }
