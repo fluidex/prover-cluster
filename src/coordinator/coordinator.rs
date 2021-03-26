@@ -30,12 +30,11 @@ impl Cluster for Coordinator {
             .ok_or_else(|| tonic::Status::new(tonic::Code::InvalidArgument, "unknown circuit"))?;
 
         match self.gate_keeper.fetch_task(circuit) {
-            // None => Err(tonic::Status::new(tonic::Code::Unknown, "no task ready to prove")),
-            // Some((_id, t)) => {
-            //     // TODO: mark task
-            //     Ok(Response::new((*t).clone()))
-            // }
-            _ => Err(tonic::Status::new(tonic::Code::Unknown, "no task ready to prove")),
+            None => Err(tonic::Status::new(tonic::Code::Unknown, "no task ready to prove")),
+            Some((_id, t)) => {
+                // TODO: mark task
+                Ok(Response::new((*t).clone()))
+            }
         }
     }
 
