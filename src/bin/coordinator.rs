@@ -2,7 +2,8 @@ use prover_cluster::coordinator::{config, Coordinator};
 use prover_cluster::pb::cluster_server::ClusterServer;
 use tonic::transport::Server;
 
-fn main() {
+#[tokio::main]
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
     dotenv::dotenv().ok();
     env_logger::init();
     log::info!("prover coordinator started");
@@ -14,5 +15,10 @@ fn main() {
     log::debug!("{:?}", settings);
 
     let coordinator = Coordinator::from_config(&settings);
-    Server::builder().add_service(ClusterServer::new(coordinator)).serve(coordinator.addr())/*.await*/;
+    Server::builder()
+        .add_service(ClusterServer::new(coordinator.clone()))
+        .serve(coordinator.addr)
+        .await?;
+
+    Ok(())
 }

@@ -4,20 +4,16 @@ use crate::pb::*;
 use std::net::SocketAddr;
 use tonic::{Request, Response, Status};
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Coordinator {
     pub addr: SocketAddr,
 }
 
 impl Coordinator {
-    pub fn from_config(_config: &Settings) -> Self {
+    pub fn from_config(config: &Settings) -> Self {
         Self {
-            addr: "[::1]:50051".parse().unwrap(),
+            addr: format!("[::1]:{:?}", config.port).parse().unwrap(),
         }
-    }
-
-    pub fn addr(&self) -> SocketAddr {
-        self.addr
     }
 }
 
