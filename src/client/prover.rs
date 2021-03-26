@@ -33,8 +33,8 @@ impl Prover {
     }
 
     pub async fn prove(&self, task: &Task) -> Result<Proof<Bn256, PlonkCsWidth4WithNextStepParams>, anyhow::Error> {
+        log::info!("proving task id: {:?}", task.id);
         if task.circuit != (self.circuit_type as i32) {
-            log::debug!("task_id: {:?}", task.id);
             log::debug!("circuit_id: {:?}", task.circuit);
             log::debug!("circuit parsing result: {:?}", pb::Circuit::from_i32(task.circuit));
             return Err(anyhow!("unsupported task circuit!"));
