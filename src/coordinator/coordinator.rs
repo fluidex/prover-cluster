@@ -26,9 +26,9 @@ impl Coordinator {
 #[tonic::async_trait]
 impl Cluster for Coordinator {
     async fn poll_task(&self, request: Request<PollTaskRequest>) -> Result<Response<Task>, Status> {
+    	// TODO: can we remove this let?
         let circuit = request.into_inner().circuit;
-        let tasks: BTreeMap<&String, &Task> = self.tasks.iter().filter(|(_id, t)| t.circuit == circuit).collect();
-        match tasks.iter().next() {
+        match self.gate_keeper.fetch_task(circuit) {
             None => Err(tonic::Status::new(tonic::Code::Unknown, "no task ready to prove")),
             Some((_id, t)) => {
                 // TODO: mark task
