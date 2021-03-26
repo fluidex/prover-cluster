@@ -9,17 +9,29 @@ use bellman_ce::{
 pub struct Prover {
     circuit_type: pb::Circuit,
     r1cs: plonkit::circom_circuit::R1CS<Bn256>,
-    srs_monomial_form: String,
-    srs_lagrange_form: String,
+    setup: plonkit::plonk::SetupForProver<Bn256>,
 }
 
 impl Prover {
     pub fn from_config(config: &Settings) -> Self {
+        let r1cs = plonkit::reader::load_r1cs(&config.r1cs);
+        let circuit = plonkit::circom_circuit::CircomCircuit {
+            r1cs: r1cs.clone(),
+            witness: None,
+            wire_mapping: None,
+            aux_offset: plonkit::plonk::AUX_OFFSET,
+        };
+        let setup = plonkit::plonk::SetupForProver::prepare_setup_for_prover(
+            circuit.clone(),
+            plonkit::reader::load_key_monomial_form(&config.srs_monomial_form),
+            plonkit::reader::maybe_load_key_lagrange_form(Some(config.srs_lagrange_form.clone())),
+        )
+        .expect("setup prepare err");
+
         Self {
             circuit_type: config.circuit(),
-            r1cs: plonkit::reader::load_r1cs(&config.r1cs),
-            srs_monomial_form: config.srs_monomial_form.clone(),
-            srs_lagrange_form: config.srs_lagrange_form.clone(),
+            r1cs: r1cs,
+            setup: setup,
         }
     }
 
@@ -38,12 +50,6 @@ impl Prover {
             wire_mapping: None,
             aux_offset: plonkit::plonk::AUX_OFFSET,
         };
-        let setup = plonkit::plonk::SetupForProver::prepare_setup_for_prover(
-            circuit.clone(),
-            plonkit::reader::load_key_monomial_form(&self.srs_monomial_form),
-            plonkit::reader::maybe_load_key_lagrange_form(Some(self.srs_lagrange_form.clone())),
-        )
-        .expect("setup prepare err");
-        setup.prove(circuit).map_err(|e| anyhow!("{:?}", e))
+        self.setup.prove(circuit).map_err(|e| anyhow!("{:?}", e))
     }
 }
