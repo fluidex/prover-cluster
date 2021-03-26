@@ -4,10 +4,10 @@ use bellman_ce::{
     pairing::bn256::Bn256,
     plonk::better_cs::{cs::PlonkCsWidth4WithNextStepParams, keys::Proof},
 };
-use std::{thread, time};
+use anyhow::anyhow;
 
 pub struct Prover {
-    circuit_name: pb::Circuit,
+    circuit_type: pb::Circuit,
     setup: plonkit::plonk::SetupForProver<Bn256>,
 }
 
@@ -24,17 +24,21 @@ impl Prover {
             plonkit::reader::load_key_monomial_form(&config.srs_monomial_form),
             plonkit::reader::maybe_load_key_lagrange_form(Some(config.srs_lagrange_form.clone())),
         )
-        .expect("prepare err");
+        .expect("setup prepare err");
 
         Self {
-            circuit_name: config.circuit(),
+            circuit_type: config.circuit(),
             setup: setup,
         }
     }
 
-    pub async fn prove(&self, _task: &Task) -> Result<Proof<Bn256, PlonkCsWidth4WithNextStepParams>, anyhow::Error> {
-        let ten_millis = time::Duration::from_millis(10000);
-        thread::sleep(ten_millis);
+    pub async fn prove(&self, task: &Task) -> Result<Proof<Bn256, PlonkCsWidth4WithNextStepParams>, anyhow::Error> {
+        if task.circuit != (self.circuit_type as i32) {
+            log::debug!("task_id: {:?}", task.id);
+            log::debug!("circuit_id: {:?}", task.circuit);
+            log::debug!("circuit parsing result: {:?}", pb::Circuit::from_i32(task.circuit));
+            return Err(anyhow!("unsupported task circuit!"));
+        }
 
         unimplemented!()
     }
