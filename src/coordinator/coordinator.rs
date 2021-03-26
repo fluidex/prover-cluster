@@ -20,7 +20,7 @@ impl Coordinator {
         Self {
             addr: format!("[::1]:{:?}", config.port).parse().unwrap(),
             circuit_tasks: HashMap::new(),
-            gate_keeper: GateKeeper::new(),
+            gate_keeper: GateKeeper::from_config(config),
         }
     }
 }
