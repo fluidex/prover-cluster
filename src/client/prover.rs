@@ -2,7 +2,6 @@ use crate::client::Settings;
 use crate::{pb, pb::*};
 use anyhow::anyhow;
 use bellman_ce::{
-    kate_commitment::{Crs, CrsForLagrangeForm, CrsForMonomialForm},
     pairing::bn256::Bn256,
     plonk::better_cs::{cs::PlonkCsWidth4WithNextStepParams, keys::Proof},
 };
@@ -10,8 +9,8 @@ use bellman_ce::{
 pub struct Prover {
     circuit_type: pb::Circuit,
     r1cs: plonkit::circom_circuit::R1CS<Bn256>,
-    srs_monomial_form: Crs<Bn256, CrsForMonomialForm>,
-    srs_lagrange_form: Option<Crs<Bn256, CrsForLagrangeForm>>,
+    srs_monomial_form: String,
+    srs_lagrange_form: String,
 }
 
 impl Prover {
@@ -19,8 +18,8 @@ impl Prover {
         Self {
             circuit_type: config.circuit(),
             r1cs: plonkit::reader::load_r1cs(&config.r1cs),
-            srs_monomial_form: plonkit::reader::load_key_monomial_form(&config.srs_monomial_form),
-            srs_lagrange_form: plonkit::reader::maybe_load_key_lagrange_form(Some(config.srs_lagrange_form.clone())),
+            srs_monomial_form: config.srs_monomial_form.clone(),
+            srs_lagrange_form: config.srs_lagrange_form.clone(),
         }
     }
 
@@ -33,14 +32,17 @@ impl Prover {
         }
 
         let circuit = plonkit::circom_circuit::CircomCircuit {
-            r1cs: self.r1cs,
+            r1cs: self.r1cs.clone(),
             witness: None, // TODO:
             wire_mapping: None,
             aux_offset: plonkit::plonk::AUX_OFFSET,
         };
-        let setup =
-            plonkit::plonk::SetupForProver::prepare_setup_for_prover(circuit.clone(), self.srs_monomial_form, self.srs_lagrange_form)
-                .expect("setup prepare err");
+        let setup = plonkit::plonk::SetupForProver::prepare_setup_for_prover(
+            circuit.clone(),
+            plonkit::reader::load_key_monomial_form(&self.srs_monomial_form),
+            plonkit::reader::maybe_load_key_lagrange_form(Some(self.srs_lagrange_form.clone())),
+        )
+        .expect("setup prepare err");
         setup.prove(circuit).map_err(|e| anyhow!("{:?}", e))
     }
 }
