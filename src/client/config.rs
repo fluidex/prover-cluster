@@ -5,9 +5,12 @@ use std::time::Duration;
 #[derive(Debug, Deserialize, Clone, PartialEq)]
 pub struct Settings {
     pub prover_id: String,
-    pub circuit: String,
     pub upstream: String,
     pub poll_interval: u64,
+    pub circuit: String,
+    pub r1cs: String,
+    pub srs_monomial_form: String,
+    pub srs_lagrange_form: String,
 }
 
 impl Settings {
