@@ -1,7 +1,6 @@
-use crate::coordinator::Settings;
+use crate::coordinator::{GateKeeper, Settings};
 use crate::pb::cluster_server::Cluster;
 use crate::pb::*;
-use std::collections::BTreeMap;
 use std::net::SocketAddr;
 use tonic::{Request, Response, Status};
 
@@ -12,14 +11,14 @@ use tonic::{Request, Response, Status};
 #[derive(Debug, Clone)]
 pub struct Coordinator {
     pub addr: SocketAddr,
-    tasks: BTreeMap<String, Task>,
+    gate_keeper: GateKeeper,
 }
 
 impl Coordinator {
     pub fn from_config(config: &Settings) -> Self {
         Self {
             addr: format!("[::1]:{:?}", config.port).parse().unwrap(),
-            tasks: BTreeMap::new(),
+            gate_keeper: GateKeeper::from_config(config),
         }
     }
 }
