@@ -43,7 +43,8 @@ impl Prover {
             return Err(anyhow!("unsupported task circuit!"));
         }
 
-        let witness = plonkit::reader::load_witness_from_array::<Bn256>(task.witness.clone()).expect("load witness.");
+        let witness =
+            plonkit::reader::load_witness_from_array::<Bn256>(task.witness.clone()).map_err(|e| anyhow!("load witness error: {:?}", e))?;
         let circuit = plonkit::circom_circuit::CircomCircuit {
             r1cs: self.r1cs.clone(),
             witness: Some(witness),
