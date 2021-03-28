@@ -1,9 +1,7 @@
 use prover_cluster::coordinator::{config, Coordinator};
 use prover_cluster::pb::cluster_server::ClusterServer;
-use tonic::transport::Server;
 
-#[tokio::main]
-async fn main() -> Result<(), Box<dyn std::error::Error>> {
+fn main() {
     dotenv::dotenv().ok();
     env_logger::init();
     log::info!("prover coordinator started");
@@ -14,11 +12,40 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let settings: config::Settings = conf.try_into().unwrap();
     log::debug!("{:?}", settings);
 
-    let coordinator = Coordinator::from_config(&settings);
-    Server::builder()
-        .add_service(ClusterServer::new(coordinator.clone()))
-        .serve(coordinator.addr)
+    let main_runtime = tokio::runtime::Builder::new_multi_thread()
+        .enable_all()
+        .build()
+        .expect("build runtime");
+    main_runtime
+        .block_on(async {
+            let server = Coordinator::from_config(&settings).await.expect("init server error");
+            let addr = format!("[::1]:{:?}", settings.port).parse().unwrap();
+            grpc_run(server, addr).await
+        })
+        .unwrap();
+}
+
+async fn grpc_run(mut grpc: Coordinator, addr: std::net::SocketAddr) -> Result<(), Box<dyn std::error::Error>> {
+    log::info!("Starting gprc service");
+
+    let (tx, rx) = tokio::sync::oneshot::channel::<()>();
+    let on_leave = grpc.on_leave();
+
+    tokio::spawn(async move {
+        tokio::signal::ctrl_c().await.ok();
+        log::info!("Ctrl-c received, shutting down");
+        tx.send(()).ok();
+    });
+
+    tonic::transport::Server::builder()
+        .add_service(ClusterServer::new(grpc))
+        .serve_with_shutdown(addr, async {
+            rx.await.ok();
+        })
         .await?;
 
+    log::info!("Shutting down, waiting for final clear");
+    on_leave.leave().await;
+    log::info!("Shutted down");
     Ok(())
 }

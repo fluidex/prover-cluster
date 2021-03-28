@@ -42,7 +42,7 @@ impl Watcher {
                         }
                         Err(e) => log::error!("{:?}", e),
                     }
-                    
+
                     self.is_busy.store(false, Ordering::SeqCst);
                 }
             }
