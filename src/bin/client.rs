@@ -6,7 +6,7 @@ use prover_cluster::client::{
 use tokio::{runtime::Runtime, time};
 
 fn main() {
-    let mut main_runtime = Runtime::new().expect("main runtime start");
+    let /*mut*/ main_runtime = Runtime::new().expect("main runtime start");
 
     dotenv::dotenv().ok();
     env_logger::init();
