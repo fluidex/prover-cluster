@@ -2,6 +2,6 @@ prover_id: 1
 upstream: "http://[::1]:50055"
 poll_interval: 1000
 circuit: "block"
-r1cs: "/home/chris/gitfiles/Fluidex/plonkit/testdata/poseidon/circuit.r1cs"
-srs_monomial_form: "/home/chris/gitfiles/Fluidex/plonkit/keys/setup/setup_2^20.key"
-srs_lagrange_form: "/home/chris/gitfiles/Fluidex/plonkit/keys/setup/setup_2^20_lagrange.key"
+r1cs: "block.r1cs"
+srs_monomial_form: "setup_2^20.key"
+srs_lagrange_form: "setup_2^20_lagrange.key"
