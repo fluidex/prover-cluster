@@ -69,7 +69,7 @@ pub struct Coordinator {
 
 impl Coordinator {
     pub async fn from_config(config: &Settings) -> anyhow::Result<Self> {
-        let controller = Controller::from_config(config);
+        let controller = Controller::from_config(config).await?;
         let stub = Arc::new(RwLock::new(controller));
 
         //we always wait so the size of channel doesn't matter

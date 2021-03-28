@@ -9,9 +9,10 @@ pub struct Controller {
 }
 
 impl Controller {
-    // TODO: async & return error
-    pub fn from_config(_config: &Settings) -> Self {
-        Self { tasks: BTreeMap::new() }
+    pub async fn from_config(config: &Settings) -> anyhow::Result<Self> {
+        let /*mut*/ ret = Self { tasks: BTreeMap::new() };
+
+        Ok(ret)
     }
 
     pub fn poll_task(&mut self, request: PollTaskRequest) -> Result<Task, Status> {
