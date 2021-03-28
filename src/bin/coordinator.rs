@@ -1,7 +1,7 @@
 use prover_cluster::coordinator::{config, Coordinator};
 use prover_cluster::pb::cluster_server::ClusterServer;
-use tonic::transport::Server;
 use std::net::SocketAddr;
+use tonic::transport::Server;
 
 fn main() {
     dotenv::dotenv().ok();
@@ -18,11 +18,10 @@ fn main() {
         .enable_all()
         .build()
         .expect("build runtime");
-
-    let addr = format!("[::1]:{:?}", settings.port).parse().unwrap();
     main_runtime
         .block_on(async {
             let server = Coordinator::from_config(&settings).await.expect("init server error");
+            let addr = format!("[::1]:{:?}", settings.port).parse().unwrap();
             grpc_run(server, addr).await
         })
         .unwrap();
@@ -47,7 +46,7 @@ async fn grpc_run(mut grpc: Coordinator, addr: SocketAddr) -> Result<(), Box<dyn
         })
         .await?;
 
-    log::info!("Shutted down, wait for final clear");
+    log::info!("Shutting down, waiting for final clear");
     on_leave.leave().await;
     log::info!("Shutted down");
     Ok(())
