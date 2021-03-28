@@ -119,33 +119,19 @@ impl Coordinator {
     }
 }
 
-// TODO: atomic
 #[tonic::async_trait]
 impl Cluster for Coordinator {
     async fn poll_task(&self, request: Request<PollTaskRequest>) -> Result<Response<Task>, Status> {
-        let request = request.into_inner();
-        let circuit =
-            Circuit::from_i32(request.circuit).ok_or_else(|| tonic::Status::new(tonic::Code::InvalidArgument, "unknown circuit"))?;
-
-        unimplemented!();
-
-        // match self.controller.fetch_task(circuit) {
-        //     None => Err(tonic::Status::new(tonic::Code::ResourceExhausted, "no task ready to prove")),
-        //     Some((task_id, task)) => {
-        //         self.controller.assign(request.prover_id, task_id);
-        //         Ok(Response::new(task))
-        //     }
-        // }
+        let ControllerDispatch(act, rt) =
+            ControllerDispatch::new(move |ctrl: &mut Controller| Box::pin(async move { ctrl.poll_task(request.into_inner()) }));
+        self.task_dispacther.send(act).await.map_err(map_dispatch_err)?;
+        map_dispatch_ret(rt.await)
     }
 
     async fn submit_proof(&self, request: Request<SubmitProofRequest>) -> Result<Response<SubmitProofResponse>, Status> {
-        let request = request.into_inner();
-        unimplemented!();
-
-        // TODO: validate proof
-
-        // self.controller.store_proof(request);
-
-        // Ok(Response::new(SubmitProofResponse { valid: true }))
+        let ControllerDispatch(act, rt) =
+            ControllerDispatch::new(move |ctrl: &mut Controller| Box::pin(async move { ctrl.submit_proof(request.into_inner()) }));
+        self.task_dispacther.send(act).await.map_err(map_dispatch_err)?;
+        map_dispatch_ret(rt.await)
     }
 }
