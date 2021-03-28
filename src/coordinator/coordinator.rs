@@ -2,7 +2,6 @@ use crate::coordinator::{Controller, Settings};
 use crate::pb::cluster_server::Cluster;
 use crate::pb::*;
 use std::fmt::Debug;
-use std::net::SocketAddr;
 use std::pin::Pin;
 use std::sync::Arc;
 use tokio::sync::{mpsc, oneshot, RwLock};
@@ -54,19 +53,34 @@ fn map_dispatch_ret<OT: 'static>(recv_ret: Result<ControllerRet<OT>, oneshot::er
     }
 }
 
+pub struct ServerLeave(mpsc::Sender<ControllerAction>, oneshot::Sender<()>);
+impl ServerLeave {
+    pub async fn leave(self) {
+        self.1.send(()).unwrap();
+        self.0.closed().await;
+    }
+}
+
 #[derive(Debug)]
 pub struct Coordinator {
-    pub addr: SocketAddr,
-    // controller: StubType,
-    // task_dispacther: mpsc::Sender<ControllerAction>,
+    controller: StubType,
+    task_dispacther: mpsc::Sender<ControllerAction>,
+    set_close: Option<oneshot::Sender<()>>,
 }
 
 impl Coordinator {
-    pub async fn from_config(config: &Settings) -> Self {
-        Self {
-            addr: format!("[::1]:{:?}", config.port).parse().unwrap(),
-            // controller: Controller::from_config(config),
-        }
+    pub async fn from_config(config: &Settings) -> anyhow::Result<Self> {
+        unimplemented!()
+        // Ok(Self {
+        //     // controller: Controller::from_config(config),
+        // })
+    }
+
+    pub fn on_leave(&mut self) -> ServerLeave {
+        ServerLeave(
+            self.task_dispacther.clone(),
+            self.set_close.take().expect("Do not call twice with on_leave"),
+        )
     }
 }
 

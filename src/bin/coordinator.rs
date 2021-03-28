@@ -1,6 +1,7 @@
 use prover_cluster::coordinator::{config, Coordinator};
 use prover_cluster::pb::cluster_server::ClusterServer;
 use tonic::transport::Server;
+use std::net::SocketAddr;
 
 fn main() {
     dotenv::dotenv().ok();
@@ -13,34 +14,21 @@ fn main() {
     let settings: config::Settings = conf.try_into().unwrap();
     log::debug!("{:?}", settings);
 
-    // let addr = format!("[::1]:{:?}", settings.port).parse().unwrap();
-    // let coordinator = Coordinator::from_config(&settings);
-    // Server::builder().add_service(ClusterServer::new(coordinator)).serve(addr).await?;
-
-    // Ok(())
-
     let main_runtime: tokio::runtime::Runtime = tokio::runtime::Builder::new_multi_thread()
         .enable_all()
         .build()
         .expect("build runtime");
 
+    let addr = format!("[::1]:{:?}", settings.port).parse().unwrap();
     main_runtime
         .block_on(async {
-            let server = Coordinator::from_config(&settings).await
-            // .expect("Init state error")
-            ;
-            grpc_run(server).await
+            let server = Coordinator::from_config(&settings).await.expect("init server error");
+            grpc_run(server, addr).await
         })
         .unwrap();
 }
 
-// async fn prepare() -> anyhow::Result<Coordinator> {
-//     let mut grpc_stub = create_controller(settings);
-//     let grpc = Coordinator::new(grpc_stub);
-//     Ok(grpc)
-// }
-
-async fn grpc_run(mut grpc: Coordinator) -> Result<(), Box<dyn std::error::Error>> {
+async fn grpc_run(mut grpc: Coordinator, addr: SocketAddr) -> Result<(), Box<dyn std::error::Error>> {
     log::info!("Starting gprc service");
 
     let (tx, rx) = tokio::sync::oneshot::channel::<()>();
@@ -54,7 +42,7 @@ async fn grpc_run(mut grpc: Coordinator) -> Result<(), Box<dyn std::error::Error
 
     tonic::transport::Server::builder()
         .add_service(ClusterServer::new(grpc))
-        .serve_with_shutdown(grpc.addr, async {
+        .serve_with_shutdown(addr, async {
             rx.await.ok();
         })
         .await?;
