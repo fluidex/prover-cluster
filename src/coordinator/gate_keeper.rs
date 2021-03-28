@@ -1,5 +1,4 @@
 use crate::coordinator::Settings;
-use crate::coordinator::TaskStatus;
 use crate::pb::*;
 use std::collections::BTreeMap;
 
@@ -25,5 +24,5 @@ impl GateKeeper {
 
     pub fn assign(&self, _prover_id: String, _task_id: String) {}
 
-    pub fn store_proof(&self, req: SubmitProofRequest) {}
+    pub fn store_proof(&self, _req: SubmitProofRequest) {}
 }
