@@ -2,6 +2,7 @@ use crate::coordinator::{Controller, Settings};
 use crate::pb::cluster_server::Cluster;
 use crate::pb::*;
 use std::fmt::Debug;
+use std::net::SocketAddr;
 use std::pin::Pin;
 use std::sync::Arc;
 use tokio::sync::{mpsc, oneshot, RwLock};
@@ -55,14 +56,16 @@ fn map_dispatch_ret<OT: 'static>(recv_ret: Result<ControllerRet<OT>, oneshot::er
 
 #[derive(Debug)]
 pub struct Coordinator {
-    controller: StubType,
-    task_dispacther: mpsc::Sender<ControllerAction>,
+    pub addr: SocketAddr,
+    // controller: StubType,
+    // task_dispacther: mpsc::Sender<ControllerAction>,
 }
 
 impl Coordinator {
-    pub fn from_config(config: &Settings) -> Self {
+    pub async fn from_config(config: &Settings) -> Self {
         Self {
-            controller: Controller::from_config(config),
+            addr: format!("[::1]:{:?}", config.port).parse().unwrap(),
+            // controller: Controller::from_config(config),
         }
     }
 }

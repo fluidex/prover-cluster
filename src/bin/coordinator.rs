@@ -24,22 +24,24 @@ fn main() {
         .build()
         .expect("build runtime");
 
-    main_runtime.block_on(async {
-        let server = prepare().await.expect("Init state error");
-        grpc_run(server).await
-    })
-    .unwrap();
+    main_runtime
+        .block_on(async {
+            let server = Coordinator::from_config(&settings).await
+            // .expect("Init state error")
+            ;
+            grpc_run(server).await
+        })
+        .unwrap();
 }
 
-async fn prepare() -> anyhow::Result<Coordinator> {
-    let mut grpc_stub = create_controller(settings);
-    let grpc = Coordinator::new(grpc_stub);
-    Ok(grpc)
-}
+// async fn prepare() -> anyhow::Result<Coordinator> {
+//     let mut grpc_stub = create_controller(settings);
+//     let grpc = Coordinator::new(grpc_stub);
+//     Ok(grpc)
+// }
 
 async fn grpc_run(mut grpc: Coordinator) -> Result<(), Box<dyn std::error::Error>> {
-    // let addr = "0.0.0.0:50051".parse().unwrap();
-    // log::info!("Starting gprc service");
+    log::info!("Starting gprc service");
 
     let (tx, rx) = tokio::sync::oneshot::channel::<()>();
     let on_leave = grpc.on_leave();
@@ -51,8 +53,7 @@ async fn grpc_run(mut grpc: Coordinator) -> Result<(), Box<dyn std::error::Error
     });
 
     tonic::transport::Server::builder()
-        // TODO:???
-        .add_service(Coordinator::new(grpc))
+        .add_service(ClusterServer::new(grpc))
         .serve_with_shutdown(grpc.addr, async {
             rx.await.ok();
         })
