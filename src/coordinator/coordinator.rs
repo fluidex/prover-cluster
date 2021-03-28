@@ -8,7 +8,6 @@ use tokio::sync::{mpsc, oneshot, RwLock};
 use tonic::{Request, Response, Status};
 
 // TODO: witness generator
-// TODO: fetcher/dispatcher
 // TODO: auto clean too old entries
 
 type StubType = Arc<RwLock<Controller>>;
