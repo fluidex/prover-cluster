@@ -42,6 +42,16 @@ fn map_dispatch_err<T: 'static>(_: mpsc::error::SendError<T>) -> tonic::Status {
     tonic::Status::unknown("Server temporary unavaliable")
 }
 
+type ControllerRet<OT> = Result<OT, tonic::Status>;
+type ServerRet<OT> = Result<Response<OT>, tonic::Status>;
+
+fn map_dispatch_ret<OT: 'static>(recv_ret: Result<ControllerRet<OT>, oneshot::error::RecvError>) -> ServerRet<OT> {
+    match recv_ret {
+        Ok(ret) => ret.map(Response::new),
+        Err(_) => Err(Status::unknown("Dispatch ret unreach")),
+    }
+}
+
 #[derive(Debug)]
 pub struct Coordinator {
     controller: StubType,
