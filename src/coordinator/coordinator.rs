@@ -1,23 +1,20 @@
 use crate::coordinator::{GateKeeper, Settings};
 use crate::pb::cluster_server::Cluster;
 use crate::pb::*;
-use std::net::SocketAddr;
 use tonic::{Request, Response, Status};
 
 // TODO: witness generator
 // TODO: fetcher/dispatcher
 // TODO: auto clean too old entries
 
-#[derive(Debug, Clone)]
+#[derive(Debug)]
 pub struct Coordinator {
-    pub addr: SocketAddr,
     gate_keeper: GateKeeper,
 }
 
 impl Coordinator {
     pub fn from_config(config: &Settings) -> Self {
         Self {
-            addr: format!("[::1]:{:?}", config.port).parse().unwrap(),
             gate_keeper: GateKeeper::from_config(config),
         }
     }
