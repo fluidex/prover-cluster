@@ -10,7 +10,6 @@ use tonic::{Request, Response, Status};
 // TODO: witness generator
 // TODO: fetcher/dispatcher
 // TODO: auto clean too old entries
-// TODO: deal with leave
 
 type StubType = Arc<RwLock<Controller>>;
 type ControllerAction = Box<dyn FnOnce(StubType) -> Pin<Box<dyn futures::Future<Output = ()> + Send>> + Send>;
