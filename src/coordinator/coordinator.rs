@@ -1,15 +1,51 @@
 use crate::coordinator::{Controller, Settings};
 use crate::pb::cluster_server::Cluster;
 use crate::pb::*;
+use std::fmt::Debug;
+use std::pin::Pin;
+use std::sync::Arc;
+use tokio::sync::{mpsc, oneshot, RwLock};
 use tonic::{Request, Response, Status};
 
 // TODO: witness generator
 // TODO: fetcher/dispatcher
 // TODO: auto clean too old entries
 
+type StubType = Arc<RwLock<Controller>>;
+type ControllerAction = Box<dyn FnOnce(StubType) -> Pin<Box<dyn futures::Future<Output = ()> + Send>> + Send>;
+struct ControllerDispatch<OT>(ControllerAction, oneshot::Receiver<OT>);
+impl<OT: 'static + Debug + Send> ControllerDispatch<OT> {
+    fn new<T>(f: T) -> Self
+    where
+        T: for<'c> FnOnce(&'c mut Controller) -> Pin<Box<dyn futures::Future<Output = OT> + Send + 'c>>,
+        T: Send + 'static,
+    {
+        let (tx, rx) = oneshot::channel();
+
+        ControllerDispatch(
+            Box::new(
+                move |ctrl: StubType| -> Pin<Box<dyn futures::Future<Output = ()> + Send + 'static>> {
+                    Box::pin(async move {
+                        let mut wg = ctrl.write().await;
+                        if let Err(t) = tx.send(f(&mut wg).await) {
+                            log::error!("Controller action can not be return: {:?}", t);
+                        }
+                    })
+                },
+            ),
+            rx,
+        )
+    }
+}
+
+fn map_dispatch_err<T: 'static>(_: mpsc::error::SendError<T>) -> tonic::Status {
+    tonic::Status::unknown("Server temporary unavaliable")
+}
+
 #[derive(Debug)]
 pub struct Coordinator {
-    controller: Controller,
+    controller: StubType,
+    task_dispacther: mpsc::Sender<ControllerAction>,
 }
 
 impl Coordinator {
@@ -27,22 +63,26 @@ impl Cluster for Coordinator {
         let request = request.into_inner();
         let circuit =
             Circuit::from_i32(request.circuit).ok_or_else(|| tonic::Status::new(tonic::Code::InvalidArgument, "unknown circuit"))?;
-        match self.controller.fetch_task(circuit) {
-            None => Err(tonic::Status::new(tonic::Code::ResourceExhausted, "no task ready to prove")),
-            Some((task_id, task)) => {
-                self.controller.assign(request.prover_id, task_id);
-                Ok(Response::new(task))
-            }
-        }
+
+        unimplemented!();
+
+        // match self.controller.fetch_task(circuit) {
+        //     None => Err(tonic::Status::new(tonic::Code::ResourceExhausted, "no task ready to prove")),
+        //     Some((task_id, task)) => {
+        //         self.controller.assign(request.prover_id, task_id);
+        //         Ok(Response::new(task))
+        //     }
+        // }
     }
 
     async fn submit_proof(&self, request: Request<SubmitProofRequest>) -> Result<Response<SubmitProofResponse>, Status> {
         let request = request.into_inner();
+        unimplemented!();
 
         // TODO: validate proof
 
-        self.controller.store_proof(request);
+        // self.controller.store_proof(request);
 
-        Ok(Response::new(SubmitProofResponse { valid: true }))
+        // Ok(Response::new(SubmitProofResponse { valid: true }))
     }
 }
