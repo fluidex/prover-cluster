@@ -1,7 +1,5 @@
 use prover_cluster::coordinator::{config, Coordinator};
 use prover_cluster::pb::cluster_server::ClusterServer;
-use std::net::SocketAddr;
-use tonic::transport::Server;
 
 fn main() {
     dotenv::dotenv().ok();
@@ -27,7 +25,7 @@ fn main() {
         .unwrap();
 }
 
-async fn grpc_run(mut grpc: Coordinator, addr: SocketAddr) -> Result<(), Box<dyn std::error::Error>> {
+async fn grpc_run(mut grpc: Coordinator, addr: std::net::SocketAddr) -> Result<(), Box<dyn std::error::Error>> {
     log::info!("Starting gprc service");
 
     let (tx, rx) = tokio::sync::oneshot::channel::<()>();

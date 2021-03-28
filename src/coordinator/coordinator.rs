@@ -70,10 +70,45 @@ pub struct Coordinator {
 
 impl Coordinator {
     pub async fn from_config(config: &Settings) -> anyhow::Result<Self> {
-        unimplemented!()
-        // Ok(Self {
-        //     // controller: Controller::from_config(config),
-        // })
+        let controller = Controller::from_config(config);
+        let stub = Arc::new(RwLock::new(controller));
+
+        //we always wait so the size of channel is no matter
+        let (tx, mut rx) = mpsc::channel(16);
+        let (tx_close, mut rx_close) = oneshot::channel();
+
+        let stub_for_dispatch = stub.clone();
+
+        let ret = Self {
+            task_dispacther: tx,
+            set_close: Some(tx_close),
+            controller: stub,
+        };
+
+        tokio::spawn(async move {
+            loop {
+                tokio::select! {
+                    may_task = rx.recv() => {
+                        let task = may_task.expect("Server scheduler has unexpected exit");
+                        task(stub_for_dispatch.clone()).await;
+                    }
+                    _ = &mut rx_close => {
+                        log::info!("Server scheduler is notified to close");
+                        rx.close();
+                        break;
+                    }
+                }
+            }
+
+            //drain unhandled task
+            while let Some(task) = rx.recv().await {
+                task(stub_for_dispatch.clone()).await;
+            }
+
+            log::warn!("Server scheduler has exited");
+        });
+
+        Ok(ret)
     }
 
     pub fn on_leave(&mut self) -> ServerLeave {
