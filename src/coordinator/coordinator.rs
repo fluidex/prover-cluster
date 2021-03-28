@@ -72,7 +72,7 @@ impl Coordinator {
         let controller = Controller::from_config(config);
         let stub = Arc::new(RwLock::new(controller));
 
-        //we always wait so the size of channel is no matter
+        //we always wait so the size of channel doesn't matter
         let (tx, mut rx) = mpsc::channel(16);
         let (tx_close, mut rx_close) = oneshot::channel();
 
