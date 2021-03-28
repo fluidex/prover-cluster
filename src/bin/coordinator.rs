@@ -16,10 +16,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let addr = format!("[::1]:{:?}", settings.port).parse().unwrap();
     let coordinator = Coordinator::from_config(&settings);
-    Server::builder()
-        .add_service(ClusterServer::new(coordinator))
-        .serve(addr)
-        .await?;
+    Server::builder().add_service(ClusterServer::new(coordinator)).serve(addr).await?;
 
     Ok(())
 }

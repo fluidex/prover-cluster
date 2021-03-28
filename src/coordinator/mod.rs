@@ -1,5 +1,5 @@
 pub use config::Settings;
-pub use coordinator::{Coordinator, TaskStatus};
+pub use coordinator::Coordinator;
 pub use gate_keeper::GateKeeper;
 
 pub mod config;

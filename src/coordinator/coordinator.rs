@@ -30,7 +30,7 @@ impl Cluster for Coordinator {
         match self.gate_keeper.fetch_task(circuit) {
             None => Err(tonic::Status::new(tonic::Code::ResourceExhausted, "no task ready to prove")),
             Some((task_id, task)) => {
-                self.gate_keeper.assign(request.prover_id, task_id, TaskStatus::Proving);
+                self.gate_keeper.assign(request.prover_id, task_id);
                 Ok(Response::new(task))
             }
         }
@@ -41,15 +41,8 @@ impl Cluster for Coordinator {
 
         // TODO: validate proof
 
-        self.gate_keeper.assign(request.prover_id, request.task_id, TaskStatus::Proved);
+        self.gate_keeper.store_proof(request);
 
         Ok(Response::new(SubmitProofResponse { valid: true }))
     }
-}
-
-
-#[derive(Debug)]
-pub enum TaskStatus {
-    Proving,
-    Proved,
 }
