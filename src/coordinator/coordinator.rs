@@ -1,4 +1,4 @@
-use crate::coordinator::{GateKeeper, Settings};
+use crate::coordinator::{Controller, Settings};
 use crate::pb::cluster_server::Cluster;
 use crate::pb::*;
 use tonic::{Request, Response, Status};
@@ -9,13 +9,13 @@ use tonic::{Request, Response, Status};
 
 #[derive(Debug)]
 pub struct Coordinator {
-    gate_keeper: GateKeeper,
+    controller: Controller,
 }
 
 impl Coordinator {
     pub fn from_config(config: &Settings) -> Self {
         Self {
-            gate_keeper: GateKeeper::from_config(config),
+            controller: Controller::from_config(config),
         }
     }
 }
@@ -27,10 +27,10 @@ impl Cluster for Coordinator {
         let request = request.into_inner();
         let circuit =
             Circuit::from_i32(request.circuit).ok_or_else(|| tonic::Status::new(tonic::Code::InvalidArgument, "unknown circuit"))?;
-        match self.gate_keeper.fetch_task(circuit) {
+        match self.controller.fetch_task(circuit) {
             None => Err(tonic::Status::new(tonic::Code::ResourceExhausted, "no task ready to prove")),
             Some((task_id, task)) => {
-                self.gate_keeper.assign(request.prover_id, task_id);
+                self.controller.assign(request.prover_id, task_id);
                 Ok(Response::new(task))
             }
         }
@@ -41,7 +41,7 @@ impl Cluster for Coordinator {
 
         // TODO: validate proof
 
-        self.gate_keeper.store_proof(request);
+        self.controller.store_proof(request);
 
         Ok(Response::new(SubmitProofResponse { valid: true }))
     }

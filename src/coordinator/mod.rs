@@ -1,7 +1,7 @@
 pub use config::Settings;
 pub use coordinator::Coordinator;
-pub use gate_keeper::GateKeeper;
+pub use controller::Controller;
 
 pub mod config;
 pub mod coordinator;
-pub mod gate_keeper;
+pub mod controller;
