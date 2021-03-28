@@ -19,7 +19,7 @@ impl Watcher {
 
     pub async fn run(/*mut*/ self, mut watch_req: mpsc::Receiver<WatchRequest>) {
         while let Some(request) = watch_req.next().await {
-            if !self.is_busy.load(Ordering::SeqCst) {
+            if self.is_busy.load(Ordering::SeqCst) {
                 continue;
             }
 
