@@ -12,7 +12,7 @@ fn main() {
     let settings: config::Settings = conf.try_into().unwrap();
     log::debug!("{:?}", settings);
 
-    let main_runtime: tokio::runtime::Runtime = tokio::runtime::Builder::new_multi_thread()
+    let main_runtime = tokio::runtime::Builder::new_multi_thread()
         .enable_all()
         .build()
         .expect("build runtime");
