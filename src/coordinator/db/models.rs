@@ -1,4 +1,4 @@
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 
 pub type TimestampDbType = chrono::NaiveDateTime;
 
@@ -14,11 +14,18 @@ pub enum TaskStatus {
     Proved,
 }
 
+#[derive(Serialize, Deserialize, Debug, PartialEq, Clone, Copy, sqlx::Type)]
+// #[sqlx(type_name = "varchar")]
+#[sqlx(rename_all = "lowercase")]
+pub enum CircuitType {
+    BLOCK,
+}
+
 #[derive(sqlx::FromRow, Debug, Clone, Serialize)]
 pub struct Task {
     pub id: i64,
     pub task_id: String,
-    // pub circuit: types::OrderType,
+    pub circuit: CircuitType,
     pub witness: String,
     pub proof: String,
     pub status: TaskStatus,
