@@ -6,9 +6,10 @@ use tonic::{Code, Status};
 #[derive(Debug)]
 pub struct Controller {
     tasks: BTreeMap<String, Task>,
-    db_pool: sqlx::Pool<DbType>,
-    // TODO:
     dbConn: ConnectionType,
+
+    // we don't need batch update
+    // db_pool: sqlx::Pool<DbType>,
 }
 
 impl Controller {
