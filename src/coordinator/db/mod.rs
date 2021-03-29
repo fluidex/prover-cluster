@@ -6,6 +6,4 @@ pub type DBErrType = sqlx::Error;
 
 // TODO: migrate
 
-// TODO: sqlxverf
-
 pub mod models;
