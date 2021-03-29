@@ -31,7 +31,7 @@ impl GrpcClient {
             timestamp: chrono::Utc::now().timestamp_millis(),
         });
 
-        log::info!("prover({:?}) polling task", self.id);
+        log::info!("prover({}) polling task", self.id);
         match client.poll_task(request).await {
             Ok(t) => Ok(t.into_inner()),
             Err(e) => Err(anyhow!(e)),
