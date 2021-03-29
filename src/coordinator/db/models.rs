@@ -15,7 +15,7 @@ pub enum TaskStatus {
 }
 
 #[derive(Serialize, Deserialize, Debug, PartialEq, Clone, Copy, sqlx::Type)]
-// #[sqlx(type_name = "varchar")]
+#[sqlx(type_name = "varchar")]
 #[sqlx(rename_all = "lowercase")]
 pub enum CircuitType {
     BLOCK,
