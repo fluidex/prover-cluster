@@ -65,7 +65,18 @@ impl Controller {
     }
 
     // Failure is acceptable here. We can re-assign the task to another prover later.
-    async fn store_proof(&mut self, _req: SubmitProofRequest) -> anyhow::Result<()> {
-        unimplemented!()
+    async fn store_proof(&mut self, req: SubmitProofRequest) -> anyhow::Result<()> {
+        let stmt = format!(
+            "update from {} set proof = $1, prover_id = $2, status = $3 where task_id = $3",
+            models::tablenames::TASK
+        );
+        sqlx::query(&stmt)
+            .bind("prover_id")
+            .bind(req.prover_id)
+            .bind(models::TaskStatus::Proved)
+            .bind(req.task_id)
+            .execute(&mut self.db_conn)
+            .await?;
+        Ok(())
     }
 }
