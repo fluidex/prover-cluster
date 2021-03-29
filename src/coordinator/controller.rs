@@ -88,7 +88,7 @@ fn sqlverf_assign_task() -> impl std::any::Any {
         models::tablenames::TASK
     );
 
-    sqlx::query!(&stmt, "prover_id", models::TaskStatus::Assigned, "task_id",)
+    sqlx::query!(&stmt, "prover_id", models::TaskStatus::Assigned, "task_id")
 }
 
 #[cfg(sqlxverf)]
@@ -99,5 +99,5 @@ fn sqlverf_store_proof() -> impl std::any::Any {
         models::tablenames::TASK
     );
 
-    sqlx::query!(&stmt, hex::encode(proof), "prover_id", models::TaskStatus::Proved, "task_id",)
+    sqlx::query!(&stmt, hex::encode(proof), "prover_id", models::TaskStatus::Proved, "task_id")
 }
