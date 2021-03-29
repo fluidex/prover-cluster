@@ -1,5 +1,5 @@
-use crate::coordinator::Settings;
 use crate::coordinator::db::ConnectionType;
+use crate::coordinator::Settings;
 use crate::pb::*;
 use std::collections::BTreeMap;
 use tonic::{Code, Status};
@@ -8,14 +8,17 @@ use tonic::{Code, Status};
 pub struct Controller {
     tasks: BTreeMap<String, Task>,
     dbConn: ConnectionType,
-
     // we don't need batch update
     // db_pool: sqlx::Pool<DbType>,
 }
 
 impl Controller {
     pub async fn from_config(config: &Settings) -> anyhow::Result<Self> {
-        let /*mut*/ ret = Self { tasks: BTreeMap::new() };
+        let dbConn = ConnectionType::connect(&config.db).await?;
+        let /*mut*/ ret = Self {
+            tasks: BTreeMap::new(),
+            dbConn: dbConn,
+        };
 
         Ok(ret)
     }
