@@ -1,4 +1,4 @@
-use crate::coordinator::db::{ConnectionType, models};
+use crate::coordinator::db::{models, ConnectionType};
 use crate::coordinator::Settings;
 use crate::pb::*;
 use sqlx::Connection;
