@@ -52,22 +52,15 @@ impl Controller {
     }
 
     // Failure is acceptable here. We can re-assign the task to another prover later.
-    fn assign_task(&mut self, _task_id: String, _prover_id: String) {
-        unimplemented!();
-
+    async fn assign_task(&mut self, task_id: String, prover_id: String) -> anyhow::Result<()> {
         let query = format!("", tablenames::TASK);
-        sqlx::query(&query)
-            .bind(&asset.name)
-            .bind(asset.prec_save as i16)
-            .bind(asset.prec_show as i16)
-            .execute(self.db_conn)
-            .await?;
+        sqlx::query(&query).bind(task_id).bind(prover_id).execute(self.db_conn).await?;
 
         Ok(())
     }
 
     // Failure is acceptable here. We can re-assign the task to another prover later.
-    fn store_proof(&mut self, _req: SubmitProofRequest) {
+    async fn store_proof(&mut self, _req: SubmitProofRequest) -> anyhow::Result<()> {
         unimplemented!()
     }
 }
