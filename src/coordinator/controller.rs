@@ -1,4 +1,4 @@
-use crate::coordinator::db::ConnectionType;
+use crate::coordinator::db::{ConnectionType, models};
 use crate::coordinator::Settings;
 use crate::pb::*;
 use sqlx::Connection;
@@ -53,7 +53,7 @@ impl Controller {
 
     // Failure is acceptable here. We can re-assign the task to another prover later.
     async fn assign_task(&mut self, task_id: String, prover_id: String) -> anyhow::Result<()> {
-        let query = format!("", tablenames::TASK);
+        let query = format!("", models::tablenames::TASK);
         sqlx::query(&query).bind(task_id).bind(prover_id).execute(self.db_conn).await?;
 
         Ok(())
