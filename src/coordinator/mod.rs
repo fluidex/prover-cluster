@@ -5,3 +5,4 @@ pub use coordinator::Coordinator;
 pub mod config;
 pub mod controller;
 pub mod coordinator;
+pub mod db;
