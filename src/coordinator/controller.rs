@@ -53,7 +53,17 @@ impl Controller {
 
     // Failure is acceptable here. We can re-assign the task to another prover later.
     fn assign_task(&mut self, _task_id: String, _prover_id: String) {
-        unimplemented!()
+        unimplemented!();
+
+        let query = format!("", tablenames::TASK);
+        sqlx::query(&query)
+            .bind(&asset.name)
+            .bind(asset.prec_save as i16)
+            .bind(asset.prec_show as i16)
+            .execute(self.db_conn)
+            .await?;
+
+        Ok(())
     }
 
     // Failure is acceptable here. We can re-assign the task to another prover later.
