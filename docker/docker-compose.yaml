@@ -1,0 +1,14 @@
+version: '3.4'
+services:
+  db:
+    image: timescale/timescaledb:2.1.0-pg13
+    container_name: exchange_pq
+    restart: always
+    volumes:
+      - ./data/volumes/postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: prover_cluster
+      POSTGRES_USER: coordinator
+      POSTGRES_PASSWORD: coordinator_AA9944

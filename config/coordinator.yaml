@@ -1,2 +1,2 @@
 port: 50055
-db: postgres://prover_cluster:coordinator_AA9944@127.0.0.1/coordinator
+db: postgres://coordinator:coordinator_AA9944@127.0.0.1/prover_cluster
