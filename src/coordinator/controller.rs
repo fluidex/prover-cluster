@@ -16,12 +16,10 @@ pub struct Controller {
 impl Controller {
     pub async fn from_config(config: &Settings) -> anyhow::Result<Self> {
         let db_conn = ConnectionType::connect(&config.db).await?;
-        let /*mut*/ ret = Self {
+        Ok(Self {
             tasks: BTreeMap::new(),
             db_conn: db_conn,
-        };
-
-        Ok(ret)
+        })
     }
 
     pub fn poll_task(&mut self, request: PollTaskRequest) -> Result<Task, Status> {
@@ -53,8 +51,16 @@ impl Controller {
 
     // Failure is acceptable here. We can re-assign the task to another prover later.
     async fn assign_task(&mut self, task_id: String, prover_id: String) -> anyhow::Result<()> {
-        let stmt = format!("{:?}", models::tablenames::TASK);
-        sqlx::query(&stmt).bind(task_id).bind(prover_id).execute(&mut self.db_conn).await?;
+        let stmt = format!(
+            "update from {} set prover_id = $1, status = $2 where task_id = $3",
+            models::tablenames::TASK
+        );
+        sqlx::query(&stmt)
+            .bind(prover_id)
+            .bind(models::TaskStatus::Assigned)
+            .bind(task_id)
+            .execute(&mut self.db_conn)
+            .await?;
         Ok(())
     }
 
