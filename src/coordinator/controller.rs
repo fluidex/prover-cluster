@@ -1,4 +1,5 @@
-use crate::coordinator::{DbType, ConnectionType, Settings};
+use crate::coordinator::Settings;
+use crate::coordinator::db::ConnectionType;
 use crate::pb::*;
 use std::collections::BTreeMap;
 use tonic::{Code, Status};
