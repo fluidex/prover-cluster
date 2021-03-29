@@ -1743,6 +1743,7 @@ dependencies = [
  "dotenv",
  "env_logger 0.5.13",
  "futures 0.3.13",
+ "hex",
  "log",
  "plonkit",
  "prost",

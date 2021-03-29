@@ -71,7 +71,7 @@ impl Controller {
             models::tablenames::TASK
         );
         sqlx::query(&stmt)
-            .bind("prover_id")
+            .bind(hex::encode(req.proof))
             .bind(req.prover_id)
             .bind(models::TaskStatus::Proved)
             .bind(req.task_id)
