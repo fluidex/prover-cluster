@@ -67,7 +67,7 @@ impl Controller {
     // Failure is acceptable here. We can re-assign the task to another prover later.
     async fn store_proof(&mut self, req: SubmitProofRequest) -> anyhow::Result<()> {
         let stmt = format!(
-            "update from {} set proof = $1, prover_id = $2, status = $3 where task_id = $3",
+            "update from {} set proof = $1, prover_id = $2, status = $3 where task_id = $4",
             models::tablenames::TASK
         );
         sqlx::query(&stmt)
@@ -79,4 +79,23 @@ impl Controller {
             .await?;
         Ok(())
     }
+}
+
+#[cfg(sqlxverf)]
+fn sqlverf_assign_task() -> impl std::any::Any {
+    let stmt = format!(
+        "update from {} set prover_id = $1, status = $2 where task_id = $3",
+        models::tablenames::TASK
+    );
+    sqlx::query!(&stmt, "prover_id", models::TaskStatus::Assigned, "task_id")
+}
+
+#[cfg(sqlxverf)]
+fn sqlverf_store_proof() -> impl std::any::Any {
+    let proof = vec![0xab, 0xcd];
+    let stmt = format!(
+        "update from {} set proof = $1, prover_id = $2, status = $3 where task_id = $4",
+        models::tablenames::TASK
+    );
+    sqlx::query!(&stmt, hex::encode(proof), "prover_id", models::TaskStatus::Proved, "task_id")
 }
