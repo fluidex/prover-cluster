@@ -51,12 +51,12 @@ impl Controller {
         Ok(SubmitProofResponse { valid: true })
     }
 
-    // Failure is acceptable. We can re-assign the task to another prover later.
+    // Failure is acceptable here. We can re-assign the task to another prover later.
     fn assign_task(&mut self, _task_id: String, _prover_id: String) {
         unimplemented!()
     }
 
-    // Failure is acceptable. We can re-assign the task to another prover later.
+    // Failure is acceptable here. We can re-assign the task to another prover later.
     fn store_proof(&mut self, _req: SubmitProofRequest) {
         unimplemented!()
     }
