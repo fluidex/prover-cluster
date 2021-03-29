@@ -87,7 +87,6 @@ fn sqlverf_assign_task() -> impl std::any::Any {
         "update from {} set prover_id = $1, status = $2 where task_id = $3",
         models::tablenames::TASK
     );
-
     sqlx::query!(&stmt, "prover_id", models::TaskStatus::Assigned, "task_id")
 }
 
@@ -98,6 +97,5 @@ fn sqlverf_store_proof() -> impl std::any::Any {
         "update from {} set proof = $1, prover_id = $2, status = $3 where task_id = $4",
         models::tablenames::TASK
     );
-
     sqlx::query!(&stmt, hex::encode(proof), "prover_id", models::TaskStatus::Proved, "task_id")
 }
