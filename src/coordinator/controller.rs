@@ -1,12 +1,14 @@
-use crate::coordinator::{DbType, Settings};
+use crate::coordinator::{DbType, ConnectionType, Settings};
 use crate::pb::*;
 use std::collections::BTreeMap;
 use tonic::{Code, Status};
 
-#[derive(Debug, Clone)]
+#[derive(Debug)]
 pub struct Controller {
     tasks: BTreeMap<String, Task>,
     db_pool: sqlx::Pool<DbType>,
+    // TODO:
+    dbConn: ConnectionType,
 }
 
 impl Controller {
