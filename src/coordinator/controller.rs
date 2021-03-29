@@ -53,9 +53,8 @@ impl Controller {
 
     // Failure is acceptable here. We can re-assign the task to another prover later.
     async fn assign_task(&mut self, task_id: String, prover_id: String) -> anyhow::Result<()> {
-        let query = format!("", models::tablenames::TASK);
-        sqlx::query(&query).bind(task_id).bind(prover_id).execute(self.db_conn).await?;
-
+        let stmt = format!("{:?}", models::tablenames::TASK);
+        sqlx::query(&stmt).bind(task_id).bind(prover_id).execute(&mut self.db_conn).await?;
         Ok(())
     }
 

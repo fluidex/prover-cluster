@@ -9,4 +9,3 @@ pub type DBErrType = sqlx::Error;
 // TODO: sqlxverf
 
 pub mod models;
-pub mod sqlxextend;
