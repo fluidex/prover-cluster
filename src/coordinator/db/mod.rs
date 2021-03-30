@@ -7,3 +7,5 @@ pub type DBErrType = sqlx::Error;
 // TODO: migrate
 
 pub mod models;
+
+pub static MIGRATOR: sqlx::migrate::Migrator = sqlx::migrate!(); // defaults to "./migrations"

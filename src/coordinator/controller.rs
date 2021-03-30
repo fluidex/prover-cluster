@@ -1,4 +1,4 @@
-use crate::coordinator::db::{models, ConnectionType};
+use crate::coordinator::db::{models, ConnectionType, MIGRATOR};
 use crate::coordinator::Settings;
 use crate::pb::*;
 use sqlx::Connection;
@@ -15,7 +15,8 @@ pub struct Controller {
 
 impl Controller {
     pub async fn from_config(config: &Settings) -> anyhow::Result<Self> {
-        let db_conn = ConnectionType::connect(&config.db).await?;
+        let mut db_conn = ConnectionType::connect(&config.db).await?;
+        MIGRATOR.run(&mut db_conn).await?;
         Ok(Self {
             tasks: BTreeMap::new(),
             db_conn: db_conn,
