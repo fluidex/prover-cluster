@@ -7,10 +7,9 @@ use tonic::{Code, Status};
 
 #[derive(Debug)]
 pub struct Controller {
-    tasks: BTreeMap<String, Task>,
     db_conn: ConnectionType,
-    // we don't need batch update
-    // db_pool: sqlx::Pool<DbType>,
+    // tasks: BTreeMap<String, Task>, // use cache if we meet performance bottle neck
+    // db_pool: sqlx::Pool<DbType>, // we don't need batch update
 }
 
 impl Controller {
@@ -18,28 +17,30 @@ impl Controller {
         let mut db_conn = ConnectionType::connect(&config.db).await?;
         MIGRATOR.run(&mut db_conn).await?;
         Ok(Self {
-            tasks: BTreeMap::new(),
             db_conn: db_conn,
+            // tasks: BTreeMap::new(),
         })
     }
 
     pub fn poll_task(&mut self, request: PollTaskRequest) -> Result<Task, Status> {
         let circuit = Circuit::from_i32(request.circuit).ok_or_else(|| Status::new(Code::InvalidArgument, "unknown circuit"))?;
 
-        let tasks: BTreeMap<String, Task> = self
-            .tasks
-            .clone()
-            .into_iter()
-            .filter(|(_id, t)| t.circuit == circuit as i32)
-            .collect();
-        match tasks.into_iter().next() {
-            None => Err(Status::new(Code::ResourceExhausted, "no task ready to prove")),
-            Some((task_id, task)) => {
-                self.tasks.remove(&task_id);
-                self.assign_task(task_id, request.prover_id);
-                Ok(task)
-            }
-        }
+        unimplemented!()
+
+        // let tasks: BTreeMap<String, Task> = self
+        //     .tasks
+        //     .clone()
+        //     .into_iter()
+        //     .filter(|(_id, t)| t.circuit == circuit as i32)
+        //     .collect();
+        // match tasks.into_iter().next() {
+        //     None => Err(Status::new(Code::ResourceExhausted, "no task ready to prove")),
+        //     Some((task_id, task)) => {
+        //         self.tasks.remove(&task_id);
+        //         self.assign_task(task_id, request.prover_id);
+        //         Ok(task)
+        //     }
+        // }
     }
 
     pub fn submit_proof(&mut self, req: SubmitProofRequest) -> Result<SubmitProofResponse, Status> {
