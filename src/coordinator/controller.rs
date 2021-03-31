@@ -27,7 +27,8 @@ impl Controller {
 
         let query = format!(
             "select task_id, circuit, witness, proof, status, prover_id, created_time, updated_time
-            from {} where circuit = $1 and status = $2",
+            from {}
+            where circuit = $1 and status = $2",
             models::tablenames::TASK
         );
         let task = sqlx::query_as::<_, models::Task>(&query).bind(/*self.market_load_time*/).bind(models::TaskStatus::Assigned).fetch_optional(&mut self.db_conn).await?;
