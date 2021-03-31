@@ -26,16 +26,16 @@ impl Controller {
         let circuit = Circuit::from_i32(request.circuit).ok_or_else(|| Status::new(Code::InvalidArgument, "unknown circuit"))?;
         let task = tokio::runtime::Runtime::new()
             .unwrap()
-            .handle()
-            .block_on(self.query_idle_task(circuit));
+            // .handle()
+            .block_on(self.query_idle_task(circuit))?;
         match task {
             None => Err(Status::new(Code::ResourceExhausted, "no task ready to prove")),
             Some(t) => {
                 // self.tasks.remove(&t.task_id);
-                self.assign_task(t.task_id, request.prover_id);
+                self.assign_task(t.clone().task_id, request.prover_id);
                 Ok(Task {
                     circuit: request.circuit,
-                    id: t.task_id,
+                    id: t.clone().task_id,
                     witness: hex::decode(t.witness).unwrap(),
                 })
             }
