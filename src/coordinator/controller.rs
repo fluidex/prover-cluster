@@ -32,7 +32,7 @@ impl Controller {
             models::tablenames::TASK
         );
         let task = sqlx::query_as::<_, models::Task>(&query)
-            .bind(models::CircuitType::from(circuit))
+            .bind(models::CircuitType::from(circuit).to_db_string()) // TODO: use formatter?
             .bind(models::TaskStatus::Assigned)
             .fetch_optional(&mut self.db_conn)
             .await?;
