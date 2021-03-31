@@ -1,3 +1,4 @@
+use crate::pb;
 use serde::{Deserialize, Serialize};
 
 pub type TimestampDbType = chrono::NaiveDateTime;
@@ -19,6 +20,15 @@ pub enum TaskStatus {
 #[sqlx(rename_all = "lowercase")]
 pub enum CircuitType {
     BLOCK,
+}
+
+impl From<pb::Circuit> for CircuitType {
+    fn from(pb_circuit: pb::Circuit) -> Self {
+        match pb_circuit {
+            pb::Circuit::Block => Self::BLOCK,
+            _ => unreachable!(),
+        }
+    }
 }
 
 #[derive(sqlx::FromRow, Debug, Clone, Serialize)]

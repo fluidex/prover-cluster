@@ -31,7 +31,11 @@ impl Controller {
             where circuit = $1 and status = $2",
             models::tablenames::TASK
         );
-        let task = sqlx::query_as::<_, models::Task>(&query).bind(/*self.market_load_time*/).bind(models::TaskStatus::Assigned).fetch_optional(&mut self.db_conn).await?;
+        let task = sqlx::query_as::<_, models::Task>(&query)
+            .bind(models::CircuitType::from(circuit))
+            .bind(models::TaskStatus::Assigned)
+            .fetch_optional(&mut self.db_conn)
+            .await?;
         match task {
             None => Err(Status::new(Code::ResourceExhausted, "no task ready to prove")),
             Some(t) => {
