@@ -2,15 +2,14 @@ use crate::coordinator::db::{models, ConnectionType, MIGRATOR};
 use crate::coordinator::Settings;
 use crate::pb::*;
 use sqlx::Connection;
-use std::collections::BTreeMap;
+// use std::collections::BTreeMap;
 use tonic::{Code, Status};
 
 #[derive(Debug)]
 pub struct Controller {
-    tasks: BTreeMap<String, Task>,
     db_conn: ConnectionType,
-    // we don't need batch update
-    // db_pool: sqlx::Pool<DbType>,
+    // tasks: BTreeMap<String, Task>, // use cache if we meet performance bottle neck
+    // db_pool: sqlx::Pool<DbType>, // we don't need batch update
 }
 
 impl Controller {
@@ -18,28 +17,44 @@ impl Controller {
         let mut db_conn = ConnectionType::connect(&config.db).await?;
         MIGRATOR.run(&mut db_conn).await?;
         Ok(Self {
-            tasks: BTreeMap::new(),
             db_conn: db_conn,
+            // tasks: BTreeMap::new(),
         })
     }
 
     pub fn poll_task(&mut self, request: PollTaskRequest) -> Result<Task, Status> {
         let circuit = Circuit::from_i32(request.circuit).ok_or_else(|| Status::new(Code::InvalidArgument, "unknown circuit"))?;
-
-        let tasks: BTreeMap<String, Task> = self
-            .tasks
-            .clone()
-            .into_iter()
-            .filter(|(_id, t)| t.circuit == circuit as i32)
-            .collect();
-        match tasks.into_iter().next() {
+        let task = tokio::runtime::Runtime::new()
+            .unwrap()
+            // .handle()
+            .block_on(self.query_idle_task(circuit))?;
+        match task {
             None => Err(Status::new(Code::ResourceExhausted, "no task ready to prove")),
-            Some((task_id, task)) => {
-                self.tasks.remove(&task_id);
-                self.assign_task(task_id, request.prover_id);
-                Ok(task)
+            Some(t) => {
+                // self.tasks.remove(&t.task_id);
+                self.assign_task(t.clone().task_id, request.prover_id);
+                Ok(Task {
+                    circuit: request.circuit,
+                    id: t.clone().task_id,
+                    witness: hex::decode(t.witness).unwrap(),
+                })
             }
         }
+    }
+
+    async fn query_idle_task(&mut self, circuit: Circuit) -> Result<Option<models::Task>, Status> {
+        let query = format!(
+            "select task_id, circuit, witness, proof, status, prover_id, created_time, updated_time
+            from {}
+            where circuit = $1 and status = $2",
+            models::tablenames::TASK
+        );
+        sqlx::query_as::<_, models::Task>(&query)
+            .bind(models::CircuitType::from(circuit).to_db_string()) // TODO: use formatter?
+            .bind(models::TaskStatus::Assigned) // TODO: type looks mismatching
+            .fetch_optional(&mut self.db_conn)
+            .await
+            .map_err(|_| Status::new(Code::Internal, "db query idle task"))
     }
 
     pub fn submit_proof(&mut self, req: SubmitProofRequest) -> Result<SubmitProofResponse, Status> {
