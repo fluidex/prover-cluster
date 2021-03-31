@@ -25,22 +25,19 @@ impl Controller {
     pub fn poll_task(&mut self, request: PollTaskRequest) -> Result<Task, Status> {
         let circuit = Circuit::from_i32(request.circuit).ok_or_else(|| Status::new(Code::InvalidArgument, "unknown circuit"))?;
 
-        unimplemented!()
-
-        // let tasks: BTreeMap<String, Task> = self
-        //     .tasks
-        //     .clone()
-        //     .into_iter()
-        //     .filter(|(_id, t)| t.circuit == circuit as i32)
-        //     .collect();
-        // match tasks.into_iter().next() {
-        //     None => Err(Status::new(Code::ResourceExhausted, "no task ready to prove")),
-        //     Some((task_id, task)) => {
-        //         self.tasks.remove(&task_id);
-        //         self.assign_task(task_id, request.prover_id);
-        //         Ok(task)
-        //     }
-        // }
+        let query = format!(
+            "select task_id, circuit, witness, proof, status, prover_id, created_time, updated_time
+            from {} where circuit = $1 and status = $2",
+            models::tablenames::TASK
+        );
+        let task = sqlx::query_as::<_, models::Task>(&query).bind(/*self.market_load_time*/).bind(models::TaskStatus::Assigned).fetch_optional(&mut self.db_conn).await?;
+        match task {
+            None => Err(Status::new(Code::ResourceExhausted, "no task ready to prove")),
+            Some(t) => {
+                self.assign_task(t.task_id, request.prover_id);
+                Ok(t)
+            }
+        }
     }
 
     pub fn submit_proof(&mut self, req: SubmitProofRequest) -> Result<SubmitProofResponse, Status> {
