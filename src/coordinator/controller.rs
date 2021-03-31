@@ -2,7 +2,7 @@ use crate::coordinator::db::{models, ConnectionType, MIGRATOR};
 use crate::coordinator::Settings;
 use crate::pb::*;
 use sqlx::Connection;
-use std::collections::BTreeMap;
+// use std::collections::BTreeMap;
 use tonic::{Code, Status};
 
 #[derive(Debug)]
@@ -36,7 +36,11 @@ impl Controller {
             None => Err(Status::new(Code::ResourceExhausted, "no task ready to prove")),
             Some(t) => {
                 self.assign_task(t.task_id, request.prover_id);
-                Ok(t)
+                Ok(Task {
+                    circuit: request.circuit,
+                    id: t.task_id,
+                    witness: hex::decode(t.witness).unwrap(),
+                })
             }
         }
     }
