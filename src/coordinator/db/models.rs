@@ -31,6 +31,15 @@ impl From<pb::Circuit> for CircuitType {
     }
 }
 
+impl CircuitType {
+    pub fn to_db_string(&self) -> String {
+        match self {
+            Self::BLOCK => String::from("block"),
+            _ => unreachable!(),
+        }
+    }
+}
+
 #[derive(sqlx::FromRow, Debug, Clone, Serialize)]
 pub struct Task {
     // pub id: i64,
