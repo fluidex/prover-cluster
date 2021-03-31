@@ -35,6 +35,7 @@ impl Controller {
         match task {
             None => Err(Status::new(Code::ResourceExhausted, "no task ready to prove")),
             Some(t) => {
+                // self.tasks.remove(&task_id);
                 self.assign_task(t.task_id, request.prover_id);
                 Ok(Task {
                     circuit: request.circuit,
