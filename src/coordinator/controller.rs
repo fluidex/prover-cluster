@@ -24,7 +24,7 @@ impl Controller {
 
     pub fn poll_task(&mut self, request: PollTaskRequest) -> Result<Task, Status> {
         let circuit = Circuit::from_i32(request.circuit).ok_or_else(|| Status::new(Code::InvalidArgument, "unknown circuit"))?;
-        let task = tokio::Handle::block_on(self.query_idle_task(circuit));
+        let task = tokio::runtime::Handle::block_on(self.query_idle_task(circuit));
         match task {
             None => Err(Status::new(Code::ResourceExhausted, "no task ready to prove")),
             Some(t) => {
@@ -51,7 +51,7 @@ impl Controller {
             .bind(models::TaskStatus::Assigned) // TODO: type looks mismatching
             .fetch_optional(&mut self.db_conn)
             .await
-            .map_err(|_| Status::new(Code::Internal, "db query task"))
+            .map_err(|_| Status::new(Code::Internal, "db query idle task"))
     }
 
     pub fn submit_proof(&mut self, req: SubmitProofRequest) -> Result<SubmitProofResponse, Status> {
