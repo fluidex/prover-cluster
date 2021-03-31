@@ -26,7 +26,7 @@ impl From<pb::Circuit> for CircuitType {
     fn from(pb_circuit: pb::Circuit) -> Self {
         match pb_circuit {
             pb::Circuit::Block => Self::BLOCK,
-            _ => unreachable!(),
+            // _ => unreachable!(),
         }
     }
 }
@@ -35,7 +35,7 @@ impl CircuitType {
     pub fn to_db_string(&self) -> String {
         match self {
             Self::BLOCK => String::from("block"),
-            _ => unreachable!(),
+            // _ => unreachable!(),
         }
     }
 }
