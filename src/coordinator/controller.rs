@@ -33,7 +33,7 @@ impl Controller {
         );
         let task = sqlx::query_as::<_, models::Task>(&query)
             .bind(models::CircuitType::from(circuit).to_db_string()) // TODO: use formatter?
-            .bind(models::TaskStatus::Assigned)
+            .bind(models::TaskStatus::Assigned) // TODO: type looks mismatching
             .fetch_optional(&mut self.db_conn)
             .await.map_err(|_| Status::new(Code::Internal, "db query task"))?;
         match task {
