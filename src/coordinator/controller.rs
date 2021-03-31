@@ -25,17 +25,7 @@ impl Controller {
     pub fn poll_task(&mut self, request: PollTaskRequest) -> Result<Task, Status> {
         let circuit = Circuit::from_i32(request.circuit).ok_or_else(|| Status::new(Code::InvalidArgument, "unknown circuit"))?;
 
-        let query = format!(
-            "select task_id, circuit, witness, proof, status, prover_id, created_time, updated_time
-            from {}
-            where circuit = $1 and status = $2",
-            models::tablenames::TASK
-        );
-        let task = sqlx::query_as::<_, models::Task>(&query)
-            .bind(models::CircuitType::from(circuit).to_db_string()) // TODO: use formatter?
-            .bind(models::TaskStatus::Assigned) // TODO: type looks mismatching
-            .fetch_optional(&mut self.db_conn)
-            .await.map_err(|_| Status::new(Code::Internal, "db query task"))?;
+        let task = tokio::Handle::block_on(self.query_idle_task());
         match task {
             None => Err(Status::new(Code::ResourceExhausted, "no task ready to prove")),
             Some(t) => {
@@ -48,6 +38,21 @@ impl Controller {
                 })
             }
         }
+    }
+
+    async fn query_idle_task(&mut self) -> Result<models::Task, Status> {
+        let query = format!(
+            "select task_id, circuit, witness, proof, status, prover_id, created_time, updated_time
+            from {}
+            where circuit = $1 and status = $2",
+            models::tablenames::TASK
+        );
+        sqlx::query_as::<_, models::Task>(&query)
+            .bind(models::CircuitType::from(circuit).to_db_string()) // TODO: use formatter?
+            .bind(models::TaskStatus::Assigned) // TODO: type looks mismatching
+            .fetch_optional(&mut self.db_conn)
+            .await
+            .map_err(|_| Status::new(Code::Internal, "db query task"));
     }
 
     pub fn submit_proof(&mut self, req: SubmitProofRequest) -> Result<SubmitProofResponse, Status> {
