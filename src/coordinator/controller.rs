@@ -26,7 +26,7 @@ impl Controller {
         let circuit = Circuit::from_i32(request.circuit).ok_or_else(|| Status::new(Code::InvalidArgument, "unknown circuit"))?;
 
         let task = self.query_idle_task(circuit).await?;
-        log::info!("{:?}", task);
+        log::debug!("{:?}", task);
         match task {
             None => Err(Status::new(Code::ResourceExhausted, "no task ready to prove")),
             Some(t) => {
