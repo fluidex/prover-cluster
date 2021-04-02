@@ -31,7 +31,7 @@ impl Controller {
             None => Err(Status::new(Code::ResourceExhausted, "no task ready to prove")),
             Some(t) => {
                 // self.tasks.remove(&t.task_id);
-                // self.assign_task(t.clone().task_id, request.prover_id).await;
+                self.assign_task(t.clone().task_id, request.prover_id).await;
                 Ok(Task {
                     circuit: request.circuit,
                     id: t.clone().task_id,
@@ -70,7 +70,7 @@ impl Controller {
     // Failure is acceptable here. We can re-assign the task to another prover later.
     async fn assign_task(&mut self, task_id: String, prover_id: String) -> anyhow::Result<()> {
         let stmt = format!(
-            "update from {} set prover_id = $1, status = $2 where task_id = $3",
+            "update {} set prover_id = $1, status = $2 where task_id = $3",
             models::tablenames::TASK
         );
         sqlx::query(&stmt)
@@ -85,7 +85,7 @@ impl Controller {
     // Failure is acceptable here. We can re-assign the task to another prover later.
     async fn store_proof(&mut self, req: SubmitProofRequest) -> anyhow::Result<()> {
         let stmt = format!(
-            "update from {} set proof = $1, prover_id = $2, status = $3 where task_id = $4",
+            "update {} set proof = $1, prover_id = $2, status = $3 where task_id = $4",
             models::tablenames::TASK
         );
         sqlx::query(&stmt)
@@ -102,7 +102,7 @@ impl Controller {
 #[cfg(sqlxverf)]
 fn sqlverf_assign_task() -> impl std::any::Any {
     let stmt = format!(
-        "update from {} set prover_id = $1, status = $2 where task_id = $3",
+        "update {} set prover_id = $1, status = $2 where task_id = $3",
         models::tablenames::TASK
     );
     sqlx::query!(&stmt, "prover_id", models::TaskStatus::Assigned, "task_id")
@@ -112,7 +112,7 @@ fn sqlverf_assign_task() -> impl std::any::Any {
 fn sqlverf_store_proof() -> impl std::any::Any {
     let proof = vec![0xab, 0xcd];
     let stmt = format!(
-        "update from {} set proof = $1, prover_id = $2, status = $3 where task_id = $4",
+        "update {} set proof = $1, prover_id = $2, status = $3 where task_id = $4",
         models::tablenames::TASK
     );
     sqlx::query!(&stmt, proof, "prover_id", models::TaskStatus::Proved, "task_id")
