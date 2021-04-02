@@ -13,7 +13,7 @@ use tonic::{Request, Response, Status};
 type StubType = Arc<RwLock<Controller>>;
 type ControllerAction = Box<dyn FnOnce(StubType) -> Pin<Box<dyn futures::Future<Output = ()> + Send>> + Send>;
 struct ControllerDispatch<OT>(ControllerAction, oneshot::Receiver<OT>);
-impl<OT: 'static + Debug + Send> ControllerDispatch<OT> {
+impl<OT: 'static /*+ Debug*/ + Send> ControllerDispatch<OT> {
     fn new<T>(f: T) -> Self
     where
         T: for<'c> FnOnce(&'c mut Controller) -> Pin<Box<dyn futures::Future<Output = OT> + Send + 'c>>,
@@ -26,8 +26,9 @@ impl<OT: 'static + Debug + Send> ControllerDispatch<OT> {
                 move |ctrl: StubType| -> Pin<Box<dyn futures::Future<Output = ()> + Send + 'static>> {
                     Box::pin(async move {
                         let mut wg = ctrl.write().await;
-                        if let Err(t) = tx.send(f(&mut wg).await) {
-                            log::error!("Controller action can not be return: {:?}", t);
+                        if let Err(_t) = tx.send(f(&mut wg).await) {
+                            // log::error!("Controller action can not be return: {:?}", t);
+                            log::error!("Controller action can not be return");
                         }
                     })
                 },
@@ -121,14 +122,14 @@ impl Coordinator {
 impl Cluster for Coordinator {
     async fn poll_task(&self, request: Request<PollTaskRequest>) -> Result<Response<Task>, Status> {
         let ControllerDispatch(act, rt) =
-            ControllerDispatch::new(move |ctrl: &mut Controller| Box::pin(async move { ctrl.poll_task(request.into_inner()) }));
+            ControllerDispatch::new(move |ctrl: &mut Controller| Box::pin(ctrl.poll_task(request.into_inner())));
         self.task_dispacther.send(act).await.map_err(map_dispatch_err)?;
         map_dispatch_ret(rt.await)
     }
 
     async fn submit_proof(&self, request: Request<SubmitProofRequest>) -> Result<Response<SubmitProofResponse>, Status> {
         let ControllerDispatch(act, rt) =
-            ControllerDispatch::new(move |ctrl: &mut Controller| Box::pin(async move { ctrl.submit_proof(request.into_inner()) }));
+            ControllerDispatch::new(move |ctrl: &mut Controller| Box::pin(ctrl.submit_proof(request.into_inner())));
         self.task_dispacther.send(act).await.map_err(map_dispatch_err)?;
         map_dispatch_ret(rt.await)
     }

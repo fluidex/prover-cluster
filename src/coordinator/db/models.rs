@@ -8,7 +8,7 @@ pub mod tablenames {
 }
 
 #[derive(sqlx::Type, Debug, Clone, Serialize)]
-#[sqlx(type_name = "task_status", rename_all = "lowercase")]
+#[sqlx(type_name = "task_status", rename_all = "snake_case")]
 pub enum TaskStatus {
     NotAssigned,
     Assigned,
@@ -26,15 +26,6 @@ impl From<pb::Circuit> for CircuitType {
     fn from(pb_circuit: pb::Circuit) -> Self {
         match pb_circuit {
             pb::Circuit::Block => Self::BLOCK,
-            // _ => unreachable!(),
-        }
-    }
-}
-
-impl CircuitType {
-    pub fn to_db_string(&self) -> String {
-        match self {
-            Self::BLOCK => String::from("block"),
             // _ => unreachable!(),
         }
     }

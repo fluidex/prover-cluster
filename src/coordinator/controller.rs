@@ -22,17 +22,16 @@ impl Controller {
         })
     }
 
-    pub fn poll_task(&mut self, request: PollTaskRequest) -> Result<Task, Status> {
+    pub async fn poll_task(&mut self, request: PollTaskRequest) -> Result<Task, Status> {
         let circuit = Circuit::from_i32(request.circuit).ok_or_else(|| Status::new(Code::InvalidArgument, "unknown circuit"))?;
-        let task = tokio::runtime::Runtime::new()
-            .unwrap()
-            // .handle()
-            .block_on(self.query_idle_task(circuit))?;
+
+        let task = self.query_idle_task(circuit).await?;
+        log::debug!("{:?}", task);
         match task {
             None => Err(Status::new(Code::ResourceExhausted, "no task ready to prove")),
             Some(t) => {
                 // self.tasks.remove(&t.task_id);
-                self.assign_task(t.clone().task_id, request.prover_id);
+                self.assign_task(t.clone().task_id, request.prover_id).await;
                 Ok(Task {
                     circuit: request.circuit,
                     id: t.clone().task_id,
@@ -50,17 +49,17 @@ impl Controller {
             models::tablenames::TASK
         );
         sqlx::query_as::<_, models::Task>(&query)
-            .bind(models::CircuitType::from(circuit).to_db_string()) // TODO: use formatter?
-            .bind(models::TaskStatus::Assigned) // TODO: type looks mismatching
+            .bind(models::CircuitType::from(circuit))
+            .bind(models::TaskStatus::NotAssigned)
             .fetch_optional(&mut self.db_conn)
             .await
             .map_err(|_| Status::new(Code::Internal, "db query idle task"))
     }
 
-    pub fn submit_proof(&mut self, req: SubmitProofRequest) -> Result<SubmitProofResponse, Status> {
+    pub async fn submit_proof(&mut self, req: SubmitProofRequest) -> Result<SubmitProofResponse, Status> {
         // TODO: validate proof
 
-        self.store_proof(req);
+        self.store_proof(req).await;
 
         Ok(SubmitProofResponse { valid: true })
     }
