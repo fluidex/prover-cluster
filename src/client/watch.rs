@@ -25,8 +25,8 @@ impl Watcher {
 
             match request {
                 WatchRequest::PollTask => {
+                    log::debug!("WatchRequest::PollTask");
                     self.is_busy.store(true, Ordering::SeqCst);
-                    log::debug!("poll task from coordinator");
                     let task = match self.grpc_client.poll_task().await {
                         Ok(t) => t,
                         Err(e) => {
@@ -38,7 +38,15 @@ impl Watcher {
 
                     match self.prover.prove(&task).await {
                         Ok(proof) => {
-                            self.grpc_client.submit(&task.id, proof);
+                            match self.grpc_client.submit(&task.id, proof).await {
+                                Ok(resp) => {
+                                    log::info!("submission for task({:?}) successful", &task.id);
+                                    log::info!("task({:?}) submission result valid: {:?}", &task.id, resp.valid);
+                                }
+                                Err(e) => {
+                                    log::error!("submit result for task({:?}) error {:?}", &task.id, e);
+                                }
+                            };
                         }
                         Err(e) => log::error!("{:?}", e),
                     }

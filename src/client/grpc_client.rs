@@ -38,7 +38,7 @@ impl GrpcClient {
         }
     }
 
-    pub async fn submit(&self, task_id: &str, proof: Proof<Bn256, PlonkCsWidth4WithNextStepParams>) -> Result<(), anyhow::Error> {
+    pub async fn submit(&self, task_id: &str, proof: Proof<Bn256, PlonkCsWidth4WithNextStepParams>) -> Result<SubmitProofResponse, anyhow::Error> {
         let (_, serialized_proof) = bellman_vk_codegen::serialize_proof(&proof);
         let mut client = ClusterClient::connect(self.upstream.clone()).await?;
         let request = tonic::Request::new(SubmitProofRequest {
@@ -51,17 +51,9 @@ impl GrpcClient {
         log::info!("prover({:?}) submiting result for task({:?})", self.id, task_id);
         log::debug!("proof: {:?}", proof);
 
-        // If error, log error here instead of outer. Because we want an async submission.
         match client.submit_proof(request).await {
-            Ok(resp) => {
-                log::info!("prover({:?}) submit result for task({:?}) successfully", self.id, task_id);
-                log::info!("task({:?}) submission result valid: {:?}", task_id, resp.into_inner().valid);
-                Ok(())
-            }
-            Err(e) => {
-                log::error!("prover({:?}) submit result for task({:?}) error {:?}", self.id, task_id, e);
-                Err(anyhow!(e))
-            }
+            Ok(resp) => Ok(resp.into_inner()),
+            Err(e) => Err(anyhow!(e)),
         }
     }
 }
