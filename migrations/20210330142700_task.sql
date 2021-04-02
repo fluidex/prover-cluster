@@ -3,8 +3,8 @@ CREATE TYPE task_status AS ENUM('not_assigned', 'assigned', 'proved');
 CREATE TABLE task (
     task_id VARCHAR(30) NOT NULL,
     circuit VARCHAR(30) NOT NULL,
-    witness bytea NOT NULL,
-    proof bytea DEFAULT NULL,
+    witness BYTEA NOT NULL,
+    proof BYTEA DEFAULT NULL,
     status task_status NOT NULL DEFAULT 'not_assigned',
     prover_id VARCHAR(30) DEFAULT NULL,
     created_time TIMESTAMP(0) NOT NULL DEFAULT CURRENT_TIMESTAMP,

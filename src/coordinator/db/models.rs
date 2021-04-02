@@ -31,7 +31,6 @@ impl From<pb::Circuit> for CircuitType {
     }
 }
 
-// TODO: hex?
 #[derive(sqlx::FromRow, Debug, Clone, Serialize)]
 pub struct Task {
     // pub id: i64,
