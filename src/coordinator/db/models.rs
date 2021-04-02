@@ -31,15 +31,16 @@ impl From<pb::Circuit> for CircuitType {
     }
 }
 
+// TODO: hex?
 #[derive(sqlx::FromRow, Debug, Clone, Serialize)]
 pub struct Task {
     // pub id: i64,
     pub task_id: String,
     pub circuit: CircuitType,
-    pub witness: String,
-    pub proof: String,
+    pub witness: Vec<u8>,
+    pub proof: Option<Vec<u8>>,
     pub status: TaskStatus,
-    pub prover_id: String,
+    pub prover_id: Option<String>,
     pub created_time: TimestampDbType,
     pub updated_time: TimestampDbType,
 }

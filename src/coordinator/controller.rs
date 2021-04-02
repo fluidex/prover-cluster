@@ -31,11 +31,11 @@ impl Controller {
             None => Err(Status::new(Code::ResourceExhausted, "no task ready to prove")),
             Some(t) => {
                 // self.tasks.remove(&t.task_id);
-                self.assign_task(t.clone().task_id, request.prover_id).await;
+                // self.assign_task(t.clone().task_id, request.prover_id).await;
                 Ok(Task {
                     circuit: request.circuit,
                     id: t.clone().task_id,
-                    witness: hex::decode(t.witness).unwrap(),
+                    witness: t.witness,
                 })
             }
         }
@@ -53,7 +53,10 @@ impl Controller {
             .bind(models::TaskStatus::NotAssigned)
             .fetch_optional(&mut self.db_conn)
             .await
-            .map_err(|_| Status::new(Code::Internal, "db query idle task"))
+            .map_err(|e| {
+                log::error!("db query idle task: {:?}", e);
+                Status::new(Code::Internal, "db query idle task")
+            })
     }
 
     pub async fn submit_proof(&mut self, req: SubmitProofRequest) -> Result<SubmitProofResponse, Status> {
@@ -86,7 +89,7 @@ impl Controller {
             models::tablenames::TASK
         );
         sqlx::query(&stmt)
-            .bind(hex::encode(req.proof))
+            .bind(req.proof)
             .bind(req.prover_id)
             .bind(models::TaskStatus::Proved)
             .bind(req.task_id)
@@ -112,5 +115,5 @@ fn sqlverf_store_proof() -> impl std::any::Any {
         "update from {} set proof = $1, prover_id = $2, status = $3 where task_id = $4",
         models::tablenames::TASK
     );
-    sqlx::query!(&stmt, hex::encode(proof), "prover_id", models::TaskStatus::Proved, "task_id")
+    sqlx::query!(&stmt, proof, "prover_id", models::TaskStatus::Proved, "task_id")
 }
