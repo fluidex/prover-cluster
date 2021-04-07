@@ -38,7 +38,11 @@ impl GrpcClient {
         }
     }
 
-    pub async fn submit(&self, task_id: &str, proof: Proof<Bn256, PlonkCsWidth4WithNextStepParams>) -> Result<SubmitProofResponse, anyhow::Error> {
+    pub async fn submit(
+        &self,
+        task_id: &str,
+        proof: Proof<Bn256, PlonkCsWidth4WithNextStepParams>,
+    ) -> Result<SubmitProofResponse, anyhow::Error> {
         let (_, serialized_proof) = bellman_vk_codegen::serialize_proof(&proof);
         let mut client = ClusterClient::connect(self.upstream.clone()).await?;
         let request = tonic::Request::new(SubmitProofRequest {

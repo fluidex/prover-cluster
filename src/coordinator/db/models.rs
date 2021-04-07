@@ -10,7 +10,9 @@ pub mod tablenames {
 #[derive(sqlx::Type, Debug, Clone, Serialize)]
 #[sqlx(type_name = "task_status", rename_all = "snake_case")]
 pub enum TaskStatus {
-    NotAssigned,
+    Inited,
+    Witgening,
+    Ready,
     Assigned,
     Proved,
 }
@@ -36,7 +38,8 @@ pub struct Task {
     // pub id: i64,
     pub task_id: String,
     pub circuit: CircuitType,
-    pub witness: Vec<u8>,
+    pub input: serde_json::Value,
+    pub witness: Option<Vec<u8>>,
     pub proof: Option<Vec<u8>>,
     pub status: TaskStatus,
     pub prover_id: Option<String>,

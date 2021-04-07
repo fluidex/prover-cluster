@@ -1,4 +1,4 @@
-use crate::coordinator::db::{models, ConnectionType, MIGRATOR};
+use crate::coordinator::db::{models, ConnectionType};
 use crate::coordinator::Settings;
 use crate::pb::*;
 use sqlx::Connection;
@@ -14,14 +14,14 @@ pub struct Controller {
 
 impl Controller {
     pub async fn from_config(config: &Settings) -> anyhow::Result<Self> {
-        let mut db_conn = ConnectionType::connect(&config.db).await?;
-        MIGRATOR.run(&mut db_conn).await?;
+        let db_conn = ConnectionType::connect(&config.db).await?;
         Ok(Self {
             db_conn: db_conn,
             // tasks: BTreeMap::new(),
         })
     }
 
+    // TODO: use tx
     pub async fn poll_task(&mut self, request: PollTaskRequest) -> Result<Task, Status> {
         let circuit = Circuit::from_i32(request.circuit).ok_or_else(|| Status::new(Code::InvalidArgument, "unknown circuit"))?;
 
@@ -30,12 +30,14 @@ impl Controller {
         match task {
             None => Err(Status::new(Code::ResourceExhausted, "no task ready to prove")),
             Some(t) => {
+                log::debug!("task input: {:?}", t.input.to_string());
+
                 // self.tasks.remove(&t.task_id);
                 self.assign_task(t.clone().task_id, request.prover_id).await;
                 Ok(Task {
                     circuit: request.circuit,
                     id: t.clone().task_id,
-                    witness: t.witness,
+                    witness: t.witness.unwrap(),
                 })
             }
         }
@@ -43,14 +45,14 @@ impl Controller {
 
     async fn query_idle_task(&mut self, circuit: Circuit) -> Result<Option<models::Task>, Status> {
         let query = format!(
-            "select task_id, circuit, witness, proof, status, prover_id, created_time, updated_time
+            "select task_id, circuit, input, witness, proof, status, prover_id, created_time, updated_time
             from {}
             where circuit = $1 and status = $2",
             models::tablenames::TASK
         );
         sqlx::query_as::<_, models::Task>(&query)
             .bind(models::CircuitType::from(circuit))
-            .bind(models::TaskStatus::NotAssigned)
+            .bind(models::TaskStatus::Ready)
             .fetch_optional(&mut self.db_conn)
             .await
             .map_err(|e| {
