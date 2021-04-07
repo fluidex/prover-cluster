@@ -1,5 +1,5 @@
 use crate::coordinator::db::{ConnectionType, MIGRATOR};
-use crate::coordinator::{Controller, Settings};
+use crate::coordinator::{Controller, Settings, WitnessFactory};
 use crate::pb::cluster_server::Cluster;
 use crate::pb::*;
 use sqlx::Connection;
@@ -9,7 +9,6 @@ use std::sync::Arc;
 use tokio::sync::{mpsc, oneshot, RwLock};
 use tonic::{Request, Response, Status};
 
-// TODO: witness generator
 // TODO: auto clean too old entries
 
 type StubType = Arc<RwLock<Controller>>;
@@ -74,6 +73,9 @@ impl Coordinator {
     pub async fn from_config(config: &Settings) -> anyhow::Result<Self> {
         let mut db_conn = ConnectionType::connect(&config.db).await?;
         MIGRATOR.run(&mut db_conn).await?;
+
+        let witness_factory = WitnessFactory::from_config(config).await?;
+        tokio::spawn(witness_factory.run());
 
         let controller = Controller::from_config(config).await?;
         let stub = Arc::new(RwLock::new(controller));
