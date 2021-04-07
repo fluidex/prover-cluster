@@ -72,7 +72,7 @@ impl WitnessFactory {
             let circuit_name = format!("{:?}", task.circuit).to_lowercase();
             log::debug!("circuit_name: {:?}", circuit_name);
             if let None = self.circuits.get(&circuit_name) {
-            	log::error!("unknown circuit: {:?}", circuit_name);
+                log::error!("unknown circuit: {:?}", circuit_name);
                 continue;
             }
             let circuit = self.circuits.get(&circuit_name).unwrap();
@@ -91,7 +91,9 @@ impl WitnessFactory {
             witness_file.read_to_end(&mut witness).expect("read witness.wtns");
 
             // save to DB
-            self.save_wtns_to_db(task.clone().task_id, witness).await.expect("save witness to db");
+            self.save_wtns_to_db(task.clone().task_id, witness)
+                .await
+                .expect("save witness to db");
 
             // TODO: handle offline workers (clean up Witgening tasks)
 
