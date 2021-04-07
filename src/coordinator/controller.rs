@@ -21,7 +21,6 @@ impl Controller {
         })
     }
 
-    // TODO: use tx
     pub async fn poll_task(&mut self, request: PollTaskRequest) -> Result<Task, Status> {
         let circuit = Circuit::from_i32(request.circuit).ok_or_else(|| Status::new(Code::InvalidArgument, "unknown circuit"))?;
 
