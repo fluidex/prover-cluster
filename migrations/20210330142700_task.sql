@@ -1,11 +1,12 @@
-CREATE TYPE task_status AS ENUM('not_assigned', 'assigned', 'proved');
+CREATE TYPE task_status AS ENUM('inited', 'witgening', 'ready', 'assigned', 'proved');
 
 CREATE TABLE task (
     task_id VARCHAR(30) NOT NULL,
     circuit VARCHAR(30) NOT NULL,
-    witness BYTEA NOT NULL,
+    input jsonb NOT NULL,
+    witness BYTEA DEFAULT NULL,
     proof BYTEA DEFAULT NULL,
-    status task_status NOT NULL DEFAULT 'not_assigned',
+    status task_status NOT NULL DEFAULT 'inited',
     prover_id VARCHAR(30) DEFAULT NULL,
     created_time TIMESTAMP(0) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_time TIMESTAMP(0) NOT NULL DEFAULT CURRENT_TIMESTAMP,

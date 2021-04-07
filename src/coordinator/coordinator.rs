@@ -1,6 +1,8 @@
+use crate::coordinator::db::{ConnectionType, MIGRATOR};
 use crate::coordinator::{Controller, Settings};
 use crate::pb::cluster_server::Cluster;
 use crate::pb::*;
+use sqlx::Connection;
 use std::fmt::Debug;
 use std::pin::Pin;
 use std::sync::Arc;
@@ -67,8 +69,12 @@ pub struct Coordinator {
     set_close: Option<oneshot::Sender<()>>,
 }
 
+// TODO: db use connection pool
 impl Coordinator {
     pub async fn from_config(config: &Settings) -> anyhow::Result<Self> {
+        let mut db_conn = ConnectionType::connect(&config.db).await?;
+        MIGRATOR.run(&mut db_conn).await?;
+
         let controller = Controller::from_config(config).await?;
         let stub = Arc::new(RwLock::new(controller));
 
