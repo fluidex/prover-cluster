@@ -40,7 +40,6 @@ impl WitnessFactory {
         let mut timer = tokio::time::interval(self.witgen_interval);
 
         // TODO: use worker_pool for multiple workers
-        // TODO: handle open DB tx
         loop {
             timer.tick().await;
             log::debug!("ticktock!");
@@ -124,9 +123,9 @@ impl WitnessFactory {
                 .execute(&mut tx)
                 .await?;
 
-            tx.commit().await?;
         };
 
+        tx.commit().await?;
         Ok(fetch_res)
     }
 
