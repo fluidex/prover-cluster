@@ -52,7 +52,7 @@ cargo build --release
 # Configure 'circuit', 'r1cs', 'src_{monomial,lagrange}_from' and 'upstream' (the coordinator address) to their correct values.
 vim config/client.yaml
 
-# The we can use docker-compose / k8s / AWS ECS / Terraform / ansible to launch all the prover clients
+# Then we can use docker-compose / k8s / AWS ECS / Terraform / ansible to launch all the prover clients
 ./target/release/coordinator
 
 # Now we are all set! Prover nodes will be scheduled to generate proofs if new tasks are inserted into the DB. And the proof results can be queried from the DB at the end.
