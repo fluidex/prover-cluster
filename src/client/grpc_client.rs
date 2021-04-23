@@ -60,4 +60,12 @@ impl GrpcClient {
             Err(e) => Err(anyhow!(e)),
         }
     }
+
+    pub fn clone(&self) -> Self {
+        Self {
+            id: self.id.clone(),
+            circuit: self.circuit.clone(),
+            upstream: self.upstream.clone(),
+        }
+    }
 }
