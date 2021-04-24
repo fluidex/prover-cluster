@@ -1,15 +1,15 @@
 [package]
 name = "prover-cluster"
 version = "0.1.0"
-authors = ["HAOYUatHZ <haoyu@protonmail.com>"]
+authors = [ "HAOYUatHZ <haoyu@protonmail.com>" ]
 edition = "2018"
 
 [dependencies]
 anyhow = "1.0"
-bellman_ce = { git = "https://github.com/matter-labs/bellman", branch = "beta", default-features = false, features = ["plonk"] } # active features depend on build type
+bellman_ce = { git = "https://github.com/matter-labs/bellman", branch = "beta", default-features = false, features = [ "plonk" ] } # active features depend on build type
 bellman_vk_codegen = { git = "https://github.com/Fluidex/solidity_plonk_verifier.git" }
+chrono = { version = "0.4.19", features = [ "serde" ] }
 config_rs = { package = "config", version = "0.10.1" }
-chrono = { version = "0.4.19", features = ["serde"] }
 dotenv = "0.15.0"
 env_logger = "0.5"
 futures = "0.3"
@@ -18,12 +18,12 @@ log = "0.4"
 plonkit = { git = "https://github.com/Fluidex/plonkit.git" }
 prost = "0.7.0"
 prost-types = "0.7.0"
-serde = { version = "1.0.124", features = ["derive"] }
+serde = { version = "1.0.124", features = [ "derive" ] }
 serde_derive = "1.0.90"
 serde_json = "1.0.64"
-sqlx = { version = "0.5.1", features = ["runtime-tokio-rustls", "postgres", "chrono", "decimal", "json", "migrate" ] }
+sqlx = { version = "0.5.1", features = [ "runtime-tokio-rustls", "postgres", "chrono", "decimal", "json", "migrate" ] }
 tempfile = "3.2.0"
-tokio = { version = "1.0", features = ["full"] }
+tokio = { version = "1.0", features = [ "full" ] }
 tonic = "0.4.0"
 
 [build-dependencies]
