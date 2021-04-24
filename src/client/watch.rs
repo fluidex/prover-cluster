@@ -38,15 +38,18 @@ impl Watcher {
 
                     match self.prover.prove(&task).await {
                         Ok(proof) => {
-                            match self.grpc_client.submit(&task.id, proof).await {
-                                Ok(resp) => {
-                                    log::info!("submission for task({:?}) successful", &task.id);
-                                    log::info!("task({:?}) submission result valid: {:?}", &task.id, resp.valid);
-                                }
-                                Err(e) => {
-                                    log::error!("submit result for task({:?}) error {:?}", &task.id, e);
-                                }
-                            };
+                            let grpc_client = self.grpc_client.clone();
+                            tokio::spawn(/*move ||*/ async move {
+                                match grpc_client.submit(&task.id, proof).await {
+                                    Ok(resp) => {
+                                        log::info!("submission for task({:?}) successful", &task.id);
+                                        log::info!("task({:?}) submission result valid: {:?}", &task.id, resp.valid);
+                                    }
+                                    Err(e) => {
+                                        log::error!("submit result for task({:?}) error {:?}", &task.id, e);
+                                    }
+                                };
+                            });
                         }
                         Err(e) => log::error!("{:?}", e),
                     }

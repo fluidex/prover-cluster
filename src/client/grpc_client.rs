@@ -7,6 +7,7 @@ use bellman_ce::{
     plonk::better_cs::{cs::PlonkCsWidth4WithNextStepParams, keys::Proof},
 };
 
+#[derive(Clone)]
 pub struct GrpcClient {
     id: String,
     circuit: Circuit,
