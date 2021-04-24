@@ -7,6 +7,7 @@ use bellman_ce::{
     plonk::better_cs::{cs::PlonkCsWidth4WithNextStepParams, keys::Proof},
 };
 
+#[derive(Clone)]
 pub struct GrpcClient {
     id: String,
     circuit: Circuit,
@@ -58,14 +59,6 @@ impl GrpcClient {
         match client.submit_proof(request).await {
             Ok(resp) => Ok(resp.into_inner()),
             Err(e) => Err(anyhow!(e)),
-        }
-    }
-
-    pub fn clone(&self) -> Self {
-        Self {
-            id: self.id.clone(),
-            circuit: self.circuit.clone(),
-            upstream: self.upstream.clone(),
         }
     }
 }
