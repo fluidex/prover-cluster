@@ -122,7 +122,6 @@ impl WitnessFactory {
                 .bind(t.clone().task_id)
                 .execute(&mut tx)
                 .await?;
-
         };
 
         tx.commit().await?;
