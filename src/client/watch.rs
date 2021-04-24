@@ -1,7 +1,6 @@
 use crate::client::{GrpcClient, Prover, Settings};
 use futures::{channel::mpsc, StreamExt};
 use std::sync::atomic::{AtomicBool, Ordering};
-use std::thread;
 
 pub struct Watcher {
     prover: Prover,
@@ -39,9 +38,9 @@ impl Watcher {
 
                     match self.prover.prove(&task).await {
                         Ok(proof) => {
-                            let grpc_client_clone = self.grpc_client.clone();
-                            thread::spawn(move || async move {
-                                match grpc_client_clone.submit(&task.id, proof).await {
+                            let grpc_client = self.grpc_client.clone();
+                            tokio::spawn(/*move ||*/ async move {
+                                match grpc_client.submit(&task.id, proof).await {
                                     Ok(resp) => {
                                         log::info!("submission for task({:?}) successful", &task.id);
                                         log::info!("task({:?}) submission result valid: {:?}", &task.id, resp.valid);
