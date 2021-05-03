@@ -16,7 +16,7 @@ impl Controller {
     pub async fn from_config(config: &Settings) -> anyhow::Result<Self> {
         let db_conn = ConnectionType::connect(&config.db).await?;
         Ok(Self {
-            db_conn: db_conn,
+            db_conn,
             // tasks: BTreeMap::new(),
         })
     }
@@ -32,7 +32,7 @@ impl Controller {
                 log::debug!("task input: {:?}", t.input.to_string());
 
                 // self.tasks.remove(&t.task_id);
-                self.assign_task(t.clone().task_id, request.prover_id).await;
+                self.assign_task(t.clone().task_id, request.prover_id).await.unwrap();
                 Ok(Task {
                     circuit: request.circuit,
                     id: t.clone().task_id,
@@ -63,7 +63,7 @@ impl Controller {
     pub async fn submit_proof(&mut self, req: SubmitProofRequest) -> Result<SubmitProofResponse, Status> {
         // TODO: validate proof
 
-        self.store_proof(req).await;
+        self.store_proof(req).await.unwrap();
 
         Ok(SubmitProofResponse { valid: true })
     }
