@@ -30,9 +30,9 @@ impl WitnessFactory {
         }
 
         Ok(Self {
-            db_conn: db_conn,
+            db_conn,
             witgen_interval: config.witgen.interval(),
-            circuits: circuits,
+            circuits,
         })
     }
 
@@ -45,7 +45,7 @@ impl WitnessFactory {
             log::debug!("ticktock!");
 
             let task = self.claim_one_task().await.expect("claim_one_task");
-            if let None = task {
+            if task.is_none() {
                 continue;
             }
             let task = task.unwrap();
@@ -70,7 +70,7 @@ impl WitnessFactory {
             // decide circuit
             let circuit_name = format!("{:?}", task.circuit).to_lowercase();
             log::debug!("circuit_name: {:?}", circuit_name);
-            if let None = self.circuits.get(&circuit_name) {
+            if self.circuits.get(&circuit_name).is_none() {
                 log::error!("unknown circuit: {:?}", circuit_name);
                 continue;
             }

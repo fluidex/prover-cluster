@@ -9,6 +9,7 @@ fn main() {
     let mut conf = config_rs::Config::new();
     let config_file = dotenv::var("COORDINATOR_CONFIG").unwrap();
     conf.merge(config_rs::File::with_name(&config_file)).unwrap();
+    conf.merge(config_rs::Environment::with_prefix("coordinator")).unwrap();
     let settings: config::Settings = conf.try_into().unwrap();
     log::debug!("{:?}", settings);
 
