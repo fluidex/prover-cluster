@@ -20,7 +20,7 @@ fn main() {
     main_runtime
         .block_on(async {
             let server = Coordinator::from_config(&settings).await.expect("init server error");
-            let addr = format!("[::1]:{:?}", settings.port).parse().unwrap();
+            let addr = format!("{}:{:?}", settings.listenaddr, settings.port).parse().unwrap();
             grpc_run(server, addr).await
         })
         .unwrap();
