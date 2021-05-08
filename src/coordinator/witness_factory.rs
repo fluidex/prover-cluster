@@ -43,11 +43,8 @@ impl WitnessFactory {
         loop {
             timer.tick().await;
             log::debug!("ticktock!");
-            match self.clone().run_inner().await {
-                Err(e) => {
-                    log::error!("{}", e);
-                }
-                _ => {}
+            if let Err(e) = self.clone().run_inner().await {
+                log::error!("{}", e);
             };
         }
     }
