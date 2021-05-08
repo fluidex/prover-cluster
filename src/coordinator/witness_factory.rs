@@ -108,9 +108,10 @@ impl WitnessFactory {
             witness_file.read_to_end(&mut witness).expect("read witness.wtns");
 
             // save to DB
-            self.save_wtns_to_db(task.clone().task_id, witness)
-                .await
-                .expect("save witness to db");
+            if self.save_wtns_to_db(task.clone().task_id, witness).await.is_err() {
+                log::error!("save witness to db");
+                continue;
+            };
 
             // TODO: handle offline workers (clean up Witgening tasks)
 
