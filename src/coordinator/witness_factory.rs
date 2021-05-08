@@ -105,7 +105,10 @@ impl WitnessFactory {
             let mut witness_file = File::open(witness_filepath).expect("open witness.wtns");
             let mut witness = Vec::new();
             // read the whole file
-            witness_file.read_to_end(&mut witness).expect("read witness.wtns");
+            if witness_file.read_to_end(&mut witness).is_err() {
+                log::error!("read witness.wtns");
+                continue;
+            };
 
             // save to DB
             if self.save_wtns_to_db(task.clone().task_id, witness).await.is_err() {
