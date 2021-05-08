@@ -78,9 +78,6 @@ impl WitnessFactory {
         // decide circuit
         let circuit_name = format!("{:?}", task.circuit).to_lowercase();
         log::debug!("circuit_name: {:?}", circuit_name);
-        if self.circuits.get(&circuit_name).is_none() {
-            bail!("unknown circuit: {:?}", circuit_name);
-        }
         let circuit = if let Some(circuit) = self.circuits.get(&circuit_name) {
             circuit
         } else {
