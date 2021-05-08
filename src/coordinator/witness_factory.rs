@@ -106,7 +106,12 @@ impl WitnessFactory {
             };
 
             // read from witness
-            let mut witness_file = File::open(witness_filepath).expect("open witness.wtns");
+            let mut witness_file = if let Ok(witness_file) = File::open(witness_filepath) {
+                witness_file
+            } else {
+                log::error!("open witness.wtns");
+                continue;
+            };
             let mut witness = Vec::new();
             // read the whole file
             if witness_file.read_to_end(&mut witness).is_err() {
