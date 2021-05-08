@@ -1,22 +1,20 @@
-use crate::coordinator::db::{models, ConnectionType};
+use crate::coordinator::db::{models, DbType, PoolOptions};
 use crate::coordinator::Settings;
 use crate::pb::*;
-use sqlx::Connection;
 // use std::collections::BTreeMap;
 use tonic::{Code, Status};
 
 #[derive(Debug)]
 pub struct Controller {
-    db_conn: ConnectionType,
     // tasks: BTreeMap<String, Task>, // use cache if we meet performance bottle neck
-    // db_pool: sqlx::Pool<DbType>, // we don't need batch update
+    db_pool: sqlx::Pool<DbType>,
 }
 
 impl Controller {
     pub async fn from_config(config: &Settings) -> anyhow::Result<Self> {
-        let db_conn = ConnectionType::connect(&config.db).await?;
+        let db_pool = PoolOptions::new().connect(&config.db).await?;
         Ok(Self {
-            db_conn,
+            db_pool,
             // tasks: BTreeMap::new(),
         })
     }
@@ -52,7 +50,7 @@ impl Controller {
         sqlx::query_as::<_, models::Task>(&query)
             .bind(models::CircuitType::from(circuit))
             .bind(models::TaskStatus::Ready)
-            .fetch_optional(&mut self.db_conn)
+            .fetch_optional(&self.db_pool)
             .await
             .map_err(|e| {
                 log::error!("db query idle task: {:?}", e);
@@ -78,7 +76,7 @@ impl Controller {
             .bind(prover_id)
             .bind(models::TaskStatus::Assigned)
             .bind(task_id)
-            .execute(&mut self.db_conn)
+            .execute(&self.db_pool)
             .await?;
         Ok(())
     }
@@ -94,7 +92,7 @@ impl Controller {
             .bind(req.prover_id)
             .bind(models::TaskStatus::Proved)
             .bind(req.task_id)
-            .execute(&mut self.db_conn)
+            .execute(&self.db_pool)
             .await?;
         Ok(())
     }

@@ -1,6 +1,5 @@
-use crate::coordinator::db::{models, ConnectionType};
+use crate::coordinator::db::{models, DbType, PoolOptions};
 use crate::coordinator::Settings;
-use sqlx::Connection;
 use std::collections::HashMap;
 use std::fs::File;
 use std::io::prelude::*;
@@ -12,14 +11,14 @@ use tempfile::tempdir;
 
 #[derive(Debug)]
 pub struct WitnessFactory {
-    db_conn: ConnectionType,
+    db_pool: sqlx::Pool<DbType>,
     witgen_interval: Duration,
     circuits: HashMap<String, String>,
 }
 
 impl WitnessFactory {
     pub async fn from_config(config: &Settings) -> anyhow::Result<Self> {
-        let db_conn = ConnectionType::connect(&config.db).await?;
+        let db_pool = PoolOptions::new().connect(&config.db).await?;
         let circuits = config.witgen.circuits.clone();
         log::debug!("{:?}", circuits);
 
@@ -30,7 +29,7 @@ impl WitnessFactory {
         }
 
         Ok(Self {
-            db_conn,
+            db_pool,
             witgen_interval: config.witgen.interval(),
             circuits,
         })
@@ -101,7 +100,7 @@ impl WitnessFactory {
     }
 
     async fn claim_one_task(&mut self) -> Result<Option<models::Task>, anyhow::Error> {
-        let mut tx = self.db_conn.begin().await?;
+        let mut tx = self.db_pool.begin().await?;
 
         let query = format!(
             "select task_id, circuit, input, witness, proof, status, prover_id, created_time, updated_time
@@ -137,7 +136,7 @@ impl WitnessFactory {
             .bind(witness)
             .bind(models::TaskStatus::Ready)
             .bind(task_id)
-            .execute(&mut self.db_conn)
+            .execute(&self.db_pool)
             .await?;
         Ok(())
     }

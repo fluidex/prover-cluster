@@ -68,7 +68,6 @@ pub struct Coordinator {
     set_close: Option<oneshot::Sender<()>>,
 }
 
-// TODO: db use connection pool
 impl Coordinator {
     pub async fn from_config(config: &Settings) -> anyhow::Result<Self> {
         let mut db_conn = ConnectionType::connect(&config.db).await?;
