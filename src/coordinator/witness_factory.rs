@@ -95,11 +95,15 @@ impl WitnessFactory {
             let circuit = self.circuits.get(&circuit_name).unwrap();
 
             // execute circuit binary & wait for the execution
-            Command::new(circuit)
+            if Command::new(circuit)
                 .arg(inputjson_filepath.as_os_str())
                 .arg(witness_filepath.as_os_str())
                 .status()
-                .expect("failed to execute circuit binary");
+                .is_err()
+            {
+                log::error!("failed to execute circuit binary");
+                continue;
+            };
 
             // read from witness
             let mut witness_file = File::open(witness_filepath).expect("open witness.wtns");
