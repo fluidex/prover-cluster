@@ -44,7 +44,12 @@ impl WitnessFactory {
             timer.tick().await;
             log::debug!("ticktock!");
 
-            let task = self.claim_one_task().await.expect("claim_one_task");
+            let task: Option<models::Task> = if let Ok(task) = self.claim_one_task().await {
+                task
+            } else {
+                log::error!("claim_one_task");
+                continue;
+            };
             if task.is_none() {
                 continue;
             }
