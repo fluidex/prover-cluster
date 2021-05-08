@@ -77,7 +77,10 @@ impl WitnessFactory {
                 log::error!("create input.json");
                 continue;
             };
-            inputjson_file.write_all(inputjson.as_bytes()).expect("save input.json");
+            if inputjson_file.write_all(inputjson.as_bytes()).is_err() {
+                log::error!("save input.json");
+                continue;
+            };
 
             let witness_filepath = dir.path().join("witness.wtns");
             log::debug!("witness_filepath: {:?}", witness_filepath);
