@@ -44,7 +44,12 @@ impl WitnessFactory {
             timer.tick().await;
             log::debug!("ticktock!");
 
-            let task = self.claim_one_task().await.expect("claim_one_task");
+            let task: Option<models::Task> = if let Ok(task) = self.claim_one_task().await {
+                task
+            } else {
+                log::error!("claim_one_task: read DB fails");
+                continue;
+            };
             if task.is_none() {
                 continue;
             }
@@ -52,7 +57,12 @@ impl WitnessFactory {
             log::info!("get 1 task to generate witness");
 
             // create temp dir
-            let dir = tempdir().expect("create tempdir in std::env::temp_dir()");
+            let dir = if let Ok(dir) = tempdir() {
+                dir
+            } else {
+                log::error!("create tempdir in std::env::temp_dir()");
+                continue;
+            };
             log::info!("process in tempdir path: {:?}", dir.path());
 
             let inputjson = format!("{}", task.input);
@@ -61,8 +71,16 @@ impl WitnessFactory {
             // save inputjson to file
             let inputjson_filepath = dir.path().join("input.json");
             log::debug!("inputjson_filepath: {:?}", inputjson_filepath);
-            let mut inputjson_file = File::create(inputjson_filepath.clone()).expect("create input.json");
-            inputjson_file.write_all(inputjson.as_bytes()).expect("save input.json");
+            let mut inputjson_file = if let Ok(inputjson_file) = File::create(inputjson_filepath.clone()) {
+                inputjson_file
+            } else {
+                log::error!("create input.json");
+                continue;
+            };
+            if inputjson_file.write_all(inputjson.as_bytes()).is_err() {
+                log::error!("save input.json");
+                continue;
+            };
 
             let witness_filepath = dir.path().join("witness.wtns");
             log::debug!("witness_filepath: {:?}", witness_filepath);
@@ -70,29 +88,43 @@ impl WitnessFactory {
             // decide circuit
             let circuit_name = format!("{:?}", task.circuit).to_lowercase();
             log::debug!("circuit_name: {:?}", circuit_name);
-            if self.circuits.get(&circuit_name).is_none() {
+            let circuit = if let Some(circuit) = self.circuits.get(&circuit_name) {
+                circuit
+            } else {
                 log::error!("unknown circuit: {:?}", circuit_name);
                 continue;
-            }
-            let circuit = self.circuits.get(&circuit_name).unwrap();
+            };
 
             // execute circuit binary & wait for the execution
-            Command::new(circuit)
+            if Command::new(circuit)
                 .arg(inputjson_filepath.as_os_str())
                 .arg(witness_filepath.as_os_str())
                 .status()
-                .expect("failed to execute circuit binary");
+                .is_err()
+            {
+                log::error!("failed to execute circuit binary");
+                continue;
+            };
 
             // read from witness
-            let mut witness_file = File::open(witness_filepath).expect("open witness.wtns");
+            let mut witness_file = if let Ok(witness_file) = File::open(witness_filepath) {
+                witness_file
+            } else {
+                log::error!("open witness.wtns");
+                continue;
+            };
             let mut witness = Vec::new();
             // read the whole file
-            witness_file.read_to_end(&mut witness).expect("read witness.wtns");
+            if witness_file.read_to_end(&mut witness).is_err() {
+                log::error!("read witness.wtns");
+                continue;
+            };
 
             // save to DB
-            self.save_wtns_to_db(task.clone().task_id, witness)
-                .await
-                .expect("save witness to db");
+            if self.save_wtns_to_db(task.clone().task_id, witness).await.is_err() {
+                log::error!("save witness to db");
+                continue;
+            };
 
             // TODO: handle offline workers (clean up Witgening tasks)
 
