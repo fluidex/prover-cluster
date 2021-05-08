@@ -47,7 +47,7 @@ impl WitnessFactory {
             let task: Option<models::Task> = if let Ok(task) = self.claim_one_task().await {
                 task
             } else {
-                log::error!("claim_one_task");
+                log::error!("claim_one_task: read DB fails");
                 continue;
             };
             if task.is_none() {
@@ -57,7 +57,12 @@ impl WitnessFactory {
             log::info!("get 1 task to generate witness");
 
             // create temp dir
-            let dir = tempdir().expect("create tempdir in std::env::temp_dir()");
+            let dir = if let Ok(dir) = tempdir() {
+                dir
+            } else {
+                log::error!("create tempdir in std::env::temp_dir()");
+                continue;
+            };
             log::info!("process in tempdir path: {:?}", dir.path());
 
             let inputjson = format!("{}", task.input);
