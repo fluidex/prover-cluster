@@ -71,7 +71,12 @@ impl WitnessFactory {
             // save inputjson to file
             let inputjson_filepath = dir.path().join("input.json");
             log::debug!("inputjson_filepath: {:?}", inputjson_filepath);
-            let mut inputjson_file = File::create(inputjson_filepath.clone()).expect("create input.json");
+            let mut inputjson_file = if let Ok(inputjson_file) = File::create(inputjson_filepath.clone()) {
+                inputjson_file
+            } else {
+                log::error!("create input.json");
+                continue;
+            };
             inputjson_file.write_all(inputjson.as_bytes()).expect("save input.json");
 
             let witness_filepath = dir.path().join("witness.wtns");
