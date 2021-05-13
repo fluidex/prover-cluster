@@ -1,4 +1,3 @@
-prover_id: 1
 upstream: "http://[::1]:50055"
 poll_interval: 10000
 circuit: "block"
