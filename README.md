@@ -14,49 +14,9 @@ Nodes of the prover cluster can be divided into:
 
 2. a couple of (stateless) prover nodes. Prover nodes keep requesting tasks from coordinator, calculating the proofs and submitting them to the coordinator.
 
-# Usage Examples
+# Deployment
 
-**This repo is still under active development, so the docs may not be accurate all the time**
-
-```
-# First, write your zk-rollup circuits using the `circom` DSL.
-# Assume your circuit codes lie in `block` dir. 
-# Write your circuit codes here. 
-$ vim block/circuit.circom 
-
-# Then compile the circuit DSL file to generate a native executable,
-# the executable will be used to generate witnesses from circuit inputs.
-# After running this command, you will get a 'circuit' binary and 'circuit.r1cs'
-npx snarkit compile block 
-
-# Use plonkit to generate circuit keys for this circuit.
-# You need to install plonkit first. See https://github.com/Fluidex/plonkit
-# After running these commands, we will get SRS proving keys (monomial key and lagrange key) and verification keys (vk.bin).
-cd block
-plonkit setup --power 20 --srs_monomial_form mon.key
-plonkit dump-lagrange -c circuit.r1cs --srs_monomial_form mon.key --srs_lagrange_form lag.key
-plonkit export-verification-key -c circuit.r1cs --srs_monomial_form mon.key
-
-# Configure the coordinator.
-# Currently witness generator runs in the same process as coordinator.
-# In the yaml file, modify 'block' value to the circuit binary path, and config 'db' URL as well.
-vim config/coordinator.yaml
-
-# Launch db and coordinator.
-cd docker; docker-compose up
-cargo build --release
-./target/release/coordinator
-
-# Configure prover client nodes
-# Every prover instance should have its own config/client.yaml with unique 'prover_id'
-# Configure 'circuit', 'r1cs', 'src_{monomial,lagrange}_from' and 'upstream' (the coordinator address) to their correct values.
-vim config/client.yaml
-
-# Then we can use docker-compose / k8s / AWS ECS / Terraform / ansible to launch all the prover clients
-./target/release/coordinator
-
-# Now we are all set! Prover nodes will be scheduled to generate proofs if new tasks are inserted into the DB. And the proof results can be queried from the DB at the end.
-```
+See [deploy](./tree/master/deploy/).
 
 # Tech Internals & Dependencies
 
