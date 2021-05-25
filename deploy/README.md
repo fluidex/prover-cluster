@@ -2,14 +2,6 @@
 
 This directory include assets for deploying prover-cluster on container-based workset managament (docker-compose, k8s, etc.).
 
-## Overview
-
-Three base images would be used to start deployment:
-
-+ plonkit: built from `images/plonkit.docker`, enable cryptology setup from plonkit
-+ prover: built from `images/prover.docker`, enable running coordinator / client
-+ setup: built from `images/ssetup.docker`, enable setup circuits, and integrate them under the plonkit toolsets
-
 ## For docker-compose
 
 Use docker-compose.yaml to cast a test cluster, you have more options to integrate setup assets with prover binaries. For example, if you have prepared the setup key, you can put the key in directory `./setup/mon.key` and use `images/cluster_client_test.docker` rather than cluster_client_test.docker, which also make an setup key while building the docker image
