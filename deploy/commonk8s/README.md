@@ -43,14 +43,14 @@ After applied all assets onto k8s, we can verify the running of prover-cluster b
 
 2. Check if all client pods are running on expected nodes, and each dedicated node should have only one client pod
 
-3. Access the database, insert some lines like
+3. Access the database, insert some test data, for example, for 'poseidon' circuit you could insert
 
 ```sql
 
 insert into task (task_id, circuit, input) values 
-    ('6', 'block', '{ "foo": 13, "bar": 4 }'),
-    ('7', 'block', '{ "foo": 14, "bar": 4 }'),
-    ('8', 'block', '{ "foo": 15, "bar": 4 }');
+    ('6', 'block', '{ "foo": 13, "bar": 4 }::jsonb'),
+    ('7', 'block', '{ "foo": 14, "bar": 4 }::jsonb'),
+    ('8', 'block', '{ "foo": 15, "bar": 4 }::jsonb');
 
 ```
 
