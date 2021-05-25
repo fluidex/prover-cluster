@@ -16,7 +16,7 @@ Nodes of the prover cluster can be divided into:
 
 # Deployment
 
-See [deploy](./deploy/).
+See [deploy](./tree/master/deploy/).
 
 # Tech Internals & Dependencies
 
