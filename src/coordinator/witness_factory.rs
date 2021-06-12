@@ -37,12 +37,10 @@ impl WitnessFactory {
     }
 
     pub async fn run(self) {
-        let mut timer = tokio::time::interval(self.witgen_interval);
-
         // TODO: use worker_pool for multiple workers
         loop {
-            timer.tick().await;
-            log::debug!("ticktock!");
+            tokio::time::delay_for(self.witgen_interval).await;
+
             if let Err(e) = self.clone().run_inner().await {
                 log::error!("{}", e);
             };
