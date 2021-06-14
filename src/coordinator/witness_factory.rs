@@ -72,6 +72,20 @@ impl WitnessFactory {
             .write_all(inputjson.as_bytes())
             .map_err(|_| anyhow!("save input.json"))?;
 
+        // TODO: refactor these clone/ref
+        if let Some(output) = task.clone().output {
+            let outputjson = format!("{}", output);
+            log::debug!("outputjson content: {:?}", outputjson);
+
+            // save outputjson to file
+            let outputjson_filepath = dir.path().join("output.json");
+            log::debug!("outputjson_filepath: {:?}", outputjson_filepath);
+            let mut outputjson_file = File::create(outputjson_filepath).map_err(|_| anyhow!("create output.json"))?;
+            outputjson_file
+                .write_all(outputjson.as_bytes())
+                .map_err(|_| anyhow!("save output.json"))?;
+        };
+
         let witness_filepath = dir.path().join("witness.wtns");
         log::debug!("witness_filepath: {:?}", witness_filepath);
 
@@ -113,7 +127,7 @@ impl WitnessFactory {
         let mut tx = self.db_pool.begin().await?;
 
         let query = format!(
-            "select task_id, circuit, input, witness, proof, status, prover_id, created_time, updated_time
+            "select task_id, circuit, input, output, witness, proof, status, prover_id, created_time, updated_time
             from {}
             where status = $1 limit 1",
             models::tablenames::TASK
