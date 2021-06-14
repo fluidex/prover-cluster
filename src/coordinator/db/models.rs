@@ -39,6 +39,7 @@ pub struct Task {
     pub task_id: String,
     pub circuit: CircuitType,
     pub input: serde_json::Value,
+    pub output: Option<serde_json::Value>,
     pub witness: Option<Vec<u8>>,
     pub proof: Option<Vec<u8>>,
     pub status: TaskStatus,

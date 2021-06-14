@@ -4,6 +4,7 @@ CREATE TABLE task (
     task_id VARCHAR(30) NOT NULL,
     circuit VARCHAR(30) NOT NULL,
     input jsonb NOT NULL,
+    output jsonb NOT NULL,
     witness BYTEA DEFAULT NULL,
     proof BYTEA DEFAULT NULL,
     status task_status NOT NULL DEFAULT 'inited',
