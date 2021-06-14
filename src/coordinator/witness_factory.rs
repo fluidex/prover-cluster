@@ -72,16 +72,19 @@ impl WitnessFactory {
             .write_all(inputjson.as_bytes())
             .map_err(|_| anyhow!("save input.json"))?;
 
-        let outputjson = format!("{}", task.output);
-        log::debug!("outputjson content: {:?}", outputjson);
+        // TODO: refactor these clone/ref
+        if let Some(output) = task.clone().output {
+            let outputjson = format!("{}", output);
+            log::debug!("outputjson content: {:?}", outputjson);
 
-        // save outputjson to file
-        let outputjson_filepath = dir.path().join("output.json");
-        log::debug!("outputjson_filepath: {:?}", outputjson_filepath);
-        let mut outputjson_file = File::create(outputjson_filepath.clone()).map_err(|_| anyhow!("create output.json"))?;
-        outputjson_file
-            .write_all(outputjson.as_bytes())
-            .map_err(|_| anyhow!("save output.json"))?;
+            // save outputjson to file
+            let outputjson_filepath = dir.path().join("output.json");
+            log::debug!("outputjson_filepath: {:?}", outputjson_filepath);
+            let mut outputjson_file = File::create(outputjson_filepath).map_err(|_| anyhow!("create output.json"))?;
+            outputjson_file
+                .write_all(outputjson.as_bytes())
+                .map_err(|_| anyhow!("save output.json"))?;
+        };
 
         let witness_filepath = dir.path().join("witness.wtns");
         log::debug!("witness_filepath: {:?}", witness_filepath);
