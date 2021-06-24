@@ -2,7 +2,7 @@ version: '3.4'
 services:
   db:
     image: timescale/timescaledb:2.1.0-pg13
-    container_name: exchange_pq
+    container_name: coordinator_pq
     restart: always
     volumes:
       - ./data/volumes/postgres_data:/var/lib/postgresql/data
