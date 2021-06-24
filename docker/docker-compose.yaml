@@ -7,7 +7,7 @@ services:
     volumes:
       - ./data/volumes/postgres_data:/var/lib/postgresql/data
     ports:
-      - "5432:5432"
+      - "5433:5432"
     environment:
       POSTGRES_DB: prover_cluster
       POSTGRES_USER: coordinator
