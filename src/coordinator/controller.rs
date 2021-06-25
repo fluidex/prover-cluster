@@ -42,7 +42,7 @@ impl Controller {
 
     async fn query_idle_task(&mut self, circuit: Circuit) -> Result<Option<models::Task>, Status> {
         let query = format!(
-            "select task_id, circuit, input, witness, proof, status, prover_id, created_time, updated_time
+            "select task_id, circuit, input, output, witness, proof, status, prover_id, created_time, updated_time
             from {}
             where circuit = $1 and status = $2",
             models::tablenames::TASK
