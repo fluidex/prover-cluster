@@ -41,6 +41,7 @@ pub struct Task {
     pub input: serde_json::Value,
     pub output: Option<serde_json::Value>,
     pub witness: Option<Vec<u8>>,
+    pub public_input: Option<Vec<u8>>,
     pub proof: Option<Vec<u8>>,
     pub status: TaskStatus,
     pub prover_id: Option<String>,

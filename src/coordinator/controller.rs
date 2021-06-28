@@ -48,7 +48,7 @@ impl Controller {
             ProvingOrder::Latest => "DESC",
         };
         let query = format!(
-            "select task_id, circuit, input, output, witness, proof, status, prover_id, created_time, updated_time
+            "select task_id, circuit, input, output, witness, public_input, proof, status, prover_id, created_time, updated_time
             from {}
             where circuit = $1 and status = $2
             order by created_time $3",
@@ -92,10 +92,11 @@ impl Controller {
     // Failure is acceptable here. We can re-assign the task to another prover later.
     async fn store_proof(&mut self, req: SubmitProofRequest) -> anyhow::Result<()> {
         let stmt = format!(
-            "update {} set proof = $1, prover_id = $2, status = $3 where task_id = $4",
+            "update {} set public_input = $1, proof = $2, prover_id = $3, status = $4 where task_id = $5",
             models::tablenames::TASK
         );
         sqlx::query(&stmt)
+            .bind(req.public_input)
             .bind(req.proof)
             .bind(req.prover_id)
             .bind(models::TaskStatus::Proved)
@@ -117,10 +118,11 @@ fn sqlverf_assign_task() -> impl std::any::Any {
 
 #[cfg(sqlxverf)]
 fn sqlverf_store_proof() -> impl std::any::Any {
+    let public_input = vec![0xab, 0xcd];
     let proof = vec![0xab, 0xcd];
     let stmt = format!(
-        "update {} set proof = $1, prover_id = $2, status = $3 where task_id = $4",
+        "update {} set public_input = $1, proof = $2, prover_id = $3, status = $4 where task_id = $5",
         models::tablenames::TASK
     );
-    sqlx::query!(&stmt, proof, "prover_id", models::TaskStatus::Proved, "task_id")
+    sqlx::query!(&stmt, public_input, proof, "prover_id", models::TaskStatus::Proved, "task_id")
 }
