@@ -127,7 +127,7 @@ impl WitnessFactory {
         let mut tx = self.db_pool.begin().await?;
 
         let query = format!(
-            "select task_id, circuit, input, output, witness, proof, status, prover_id, created_time, updated_time
+            "select task_id, circuit, input, output, witness, public_input, proof, status, prover_id, created_time, updated_time
             from {}
             where status = $1 limit 1",
             models::tablenames::TASK
