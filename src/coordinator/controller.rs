@@ -1,5 +1,5 @@
+use crate::coordinator::config::*;
 use crate::coordinator::db::{models, DbType, PoolOptions};
-use crate::coordinator::{config, Settings};
 use crate::pb::*;
 // use std::collections::BTreeMap;
 use tonic::{Code, Status};
@@ -7,7 +7,7 @@ use tonic::{Code, Status};
 #[derive(Debug)]
 pub struct Controller {
     db_pool: sqlx::Pool<DbType>,
-    proving_order: config::ProvingOrder,
+    proving_order: ProvingOrder,
     // tasks: BTreeMap<String, Task>, // use cache if we meet performance bottle neck
 }
 
@@ -43,15 +43,21 @@ impl Controller {
     }
 
     async fn query_idle_task(&mut self, circuit: Circuit) -> Result<Option<models::Task>, Status> {
+        let order = match self.proving_order {
+            ProvingOrder::Oldest => "ASC",
+            ProvingOrder::Latest => "DESC",
+        };
         let query = format!(
             "select task_id, circuit, input, output, witness, proof, status, prover_id, created_time, updated_time
             from {}
-            where circuit = $1 and status = $2",
+            where circuit = $1 and status = $2
+            order by created_time $3",
             models::tablenames::TASK
         );
         sqlx::query_as::<_, models::Task>(&query)
             .bind(models::CircuitType::from(circuit))
             .bind(models::TaskStatus::Ready)
+            .bind(order)
             .fetch_optional(&self.db_pool)
             .await
             .map_err(|e| {
