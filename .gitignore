@@ -1,4 +1,5 @@
 /target
 coordinator.log
+client.log
 config/client.yaml
 config/coordinator.yaml
