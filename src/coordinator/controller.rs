@@ -1,13 +1,14 @@
 use crate::coordinator::db::{models, DbType, PoolOptions};
-use crate::coordinator::Settings;
+use crate::coordinator::{config, Settings};
 use crate::pb::*;
 // use std::collections::BTreeMap;
 use tonic::{Code, Status};
 
 #[derive(Debug)]
 pub struct Controller {
-    // tasks: BTreeMap<String, Task>, // use cache if we meet performance bottle neck
     db_pool: sqlx::Pool<DbType>,
+    proving_order: config::ProvingOrder,
+    // tasks: BTreeMap<String, Task>, // use cache if we meet performance bottle neck
 }
 
 impl Controller {
@@ -15,6 +16,7 @@ impl Controller {
         let db_pool = PoolOptions::new().connect(&config.db).await?;
         Ok(Self {
             db_pool,
+            proving_order: config.proving_order,
             // tasks: BTreeMap::new(),
         })
     }
