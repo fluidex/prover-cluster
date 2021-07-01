@@ -103,7 +103,7 @@ impl WitnessFactory {
             .arg(inputjson_filepath.as_os_str())
             .arg(witness_filepath.as_os_str())
             .status()
-            .map_err(|_| anyhow!("failed to execute circuit binary"))?;
+            .map_err(|e| anyhow!("failed to execute circuit binary {}", e))?;
 
         // read from witness
         let mut witness_file = File::open(witness_filepath).map_err(|_| anyhow!("open witness.wtns"))?;

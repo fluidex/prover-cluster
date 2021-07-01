@@ -51,13 +51,13 @@ impl Controller {
             "select task_id, circuit, input, output, witness, public_input, proof, status, prover_id, created_time, updated_time
             from {}
             where circuit = $1 and status = $2
-            order by created_time $3",
-            models::tablenames::TASK
+            order by created_time {}",
+            models::tablenames::TASK,
+            order
         );
         sqlx::query_as::<_, models::Task>(&query)
             .bind(models::CircuitType::from(circuit))
             .bind(models::TaskStatus::Ready)
-            .bind(order)
             .fetch_optional(&self.db_pool)
             .await
             .map_err(|e| {

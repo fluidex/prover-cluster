@@ -4,5 +4,5 @@ witgen:
   interval: 10000
   n_workers: 5
   circuits:
-    block: "${TARGET_CIRCUIT_DIR}"
+    block: "${TARGET_CIRCUIT_DIR}/circuit.fast"
   
