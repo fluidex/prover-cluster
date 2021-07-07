@@ -2,7 +2,7 @@ use prover_cluster::coordinator::{config, Coordinator};
 use prover_cluster::pb::cluster_server::ClusterServer;
 
 #[tokio::main]
-async fn main() -> Result<(), Box<dyn std::error::Error>> {
+async fn main() {
     dotenv::dotenv().ok();
     env_logger::init();
     log::info!("prover coordinator started");
@@ -16,7 +16,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let server = Coordinator::from_config(&settings).await.expect("init server error");
     let addr = format!("{}:{:?}", settings.listenaddr, settings.port).parse().unwrap();
-    grpc_run(server, addr).await
+    grpc_run(server, addr).await.unwrap()
 }
 
 async fn grpc_run(mut grpc: Coordinator, addr: std::net::SocketAddr) -> Result<(), Box<dyn std::error::Error>> {
