@@ -45,24 +45,27 @@ impl WitnessFactory {
         loop {
             timer.tick().await;
             log::debug!("ticktock!");
-            for _ in 0..self.n_workers {
-                let core = self.clone();
-                tokio::spawn(async move {
-                    if let Err(e) = core.run_inner().await {
-                        log::error!("{}", e);
-                    };
-                });
-            }
+            if let Err(e) = self.clone().run_inner().await {
+                log::error!("{}", e);
+            };
         }
     }
 
     async fn run_inner(mut self) -> Result<(), anyhow::Error> {
-        let task = self.claim_one_task().await.map_err(|_| anyhow!("claim_one_task"))?;
-        if task.is_none() {
-            return Ok(());
+        let tasks = self.claim_tasks().await.map_err(|e| anyhow!("claim_tasks error: {:?}", e))?;
+        for task in tasks {
+            let core = self.clone();
+            tokio::spawn(async move {
+                if let Err(e) = core.witgen(task).await {
+                    log::error!("{}", e);
+                };
+            });
         }
-        let task = task.unwrap();
-        log::info!("get 1 task to generate witness");
+        Ok(())
+    }
+
+    async fn witgen(mut self, task: models::Task) -> Result<(), anyhow::Error> {
+        log::info!("generating witness for task {:?}", task.task_id);
 
         // create temp dir
         let dir = tempdir().map_err(|_| anyhow!("create tempdir in std::env::temp_dir()"))?;
@@ -130,32 +133,31 @@ impl WitnessFactory {
         Ok(())
     }
 
-    async fn claim_one_task(&mut self) -> Result<Option<models::Task>, anyhow::Error> {
+    async fn claim_tasks(&mut self) -> Result<Vec<models::Task>, anyhow::Error> {
         let mut tx = self.db_pool.begin().await?;
 
         let query = format!(
             "select task_id, circuit, input, output, witness, public_input, proof, status, prover_id, created_time, updated_time
             from {}
-            where status = $1 limit 1",
-            models::tablenames::TASK
+            where status = $1
+            limit {}",
+            models::tablenames::TASK,
+            self.n_workers,
         );
 
-        let fetch_res = sqlx::query_as::<_, models::Task>(&query)
-            .bind(models::TaskStatus::Inited)
-            .fetch_optional(&mut tx)
-            .await?;
+        let tasks: Vec<models::Task> = sqlx::query_as(&query).bind(models::TaskStatus::Inited).fetch_all(&mut tx).await?;
 
-        if let Some(ref t) = fetch_res {
-            let stmt = format!("update {} set status = $1 where task_id = $2", models::tablenames::TASK);
-            sqlx::query(&stmt)
-                .bind(models::TaskStatus::Witgening)
-                .bind(t.clone().task_id)
-                .execute(&mut tx)
-                .await?;
-        };
+        if !tasks.is_empty() {
+            let ids: Vec<String> = tasks.iter().map(|t| t.task_id.clone()).collect();
+            let query_set = str_vec_to_query_set(ids);
+            log::debug!("query_set: {:?}", query_set);
+            let stmt = format!("update {} set status = $1 where task_id in {}", models::tablenames::TASK, query_set);
+            log::debug!("stmt: {:?}", stmt);
+            sqlx::query(&stmt).bind(models::TaskStatus::Witgening).execute(&mut tx).await?;
+        }
 
         tx.commit().await?;
-        Ok(fetch_res)
+        Ok(tasks)
     }
 
     async fn save_wtns_to_db(&mut self, task_id: String, witness: Vec<u8>) -> Result<(), anyhow::Error> {
@@ -171,4 +173,18 @@ impl WitnessFactory {
             .await?;
         Ok(())
     }
+}
+
+fn str_vec_to_query_set(strs: Vec<String>) -> String {
+    let mut s = "(".to_owned();
+    for str_i in strs {
+        s += "'";
+        s += &str_i;
+        s += "'";
+        s += ",";
+    }
+    s.pop();
+    s += ")";
+
+    s
 }
