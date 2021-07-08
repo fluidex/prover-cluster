@@ -45,9 +45,14 @@ impl WitnessFactory {
         loop {
             timer.tick().await;
             log::debug!("ticktock!");
-            if let Err(e) = self.clone().run_inner().await {
-                log::error!("{}", e);
-            };
+            for _ in 0..self.n_workers {
+                let core = self.clone();
+                tokio::spawn(async move {
+                    if let Err(e) = core.run_inner().await {
+                        log::error!("{}", e);
+                    };
+                });
+            }
         }
     }
 
