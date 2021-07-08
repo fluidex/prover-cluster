@@ -41,13 +41,18 @@ impl WitnessFactory {
     pub async fn run(self) {
         let mut timer = tokio::time::interval(self.witgen_interval);
 
-        // TODO: use worker_pool for multiple workers
+        // TODO: refactor to worker_pool
         loop {
             timer.tick().await;
             log::debug!("ticktock!");
-            if let Err(e) = self.clone().run_inner().await {
-                log::error!("{}", e);
-            };
+            for _ in 0..self.n_workers {
+                let core = self.clone();
+                tokio::spawn(async move {
+                    if let Err(e) = core.run_inner().await {
+                        log::error!("{}", e);
+                    };
+                });
+            }
         }
     }
 
@@ -59,10 +64,6 @@ impl WitnessFactory {
         let task = task.unwrap();
         log::info!("get 1 task to generate witness");
 
-        self.witgen(task).await
-    }
-
-    async fn witgen(mut self, task: models::Task) -> Result<(), anyhow::Error> {
         // create temp dir
         let dir = tempdir().map_err(|_| anyhow!("create tempdir in std::env::temp_dir()"))?;
         log::info!("process in tempdir path: {:?}", dir.path());
