@@ -15,6 +15,7 @@ pub struct WitnessFactory {
     db_pool: sqlx::Pool<DbType>,
     witgen_interval: Duration,
     circuits: HashMap<String, String>,
+    n_workers: u64,
 }
 
 impl WitnessFactory {
@@ -33,6 +34,7 @@ impl WitnessFactory {
             db_pool,
             witgen_interval: config.witgen.interval(),
             circuits,
+            n_workers: config.witgen.n_workers,
         })
     }
 
@@ -57,6 +59,10 @@ impl WitnessFactory {
         let task = task.unwrap();
         log::info!("get 1 task to generate witness");
 
+        self.witgen(task).await
+    }
+
+    async fn witgen(mut self, task: models::Task) -> Result<(), anyhow::Error> {
         // create temp dir
         let dir = tempdir().map_err(|_| anyhow!("create tempdir in std::env::temp_dir()"))?;
         log::info!("process in tempdir path: {:?}", dir.path());
