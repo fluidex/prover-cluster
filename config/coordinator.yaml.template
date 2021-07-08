@@ -2,6 +2,6 @@ port: ${PORT}
 db: "postgres://coordinator:coordinator_AA9944@127.0.0.1:5433/prover_cluster"
 witgen:
   interval: ${WITGEN_INTERVAL}
-  n_workers: 5
+  n_workers: ${N_WORKERS}
   circuits:
     block: "${TARGET_CIRCUIT_DIR}/circuit.fast"
