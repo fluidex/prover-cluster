@@ -1,7 +1,7 @@
 port: 50055
 db: postgres://coordinator:coordinator_AA9944@127.0.0.1:5433/prover_cluster
 witgen:
-  interval: 2500
+  interval: 5000
   n_workers: 5
   circuits:
     block: "circuit"
