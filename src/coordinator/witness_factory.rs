@@ -161,7 +161,7 @@ impl WitnessFactory {
         //         .await?;
         // };
 
-        if tasks.len() > 0 {
+        if !tasks.is_empty() {
             let ids: Vec<String> = tasks.iter().map(|t| t.task_id.clone()).collect();
             let stmt = format!("update {} set status = $1 where task_id in $2", models::tablenames::TASK);
             sqlx::query(&stmt)
