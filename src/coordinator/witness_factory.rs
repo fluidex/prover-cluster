@@ -57,7 +57,7 @@ impl WitnessFactory {
     }
 
     async fn run_inner(mut self) -> Result<(), anyhow::Error> {
-        let tasks = self.claim_tasks().await.map_err(|_| anyhow!("claim_tasks"))?;
+        let tasks = self.claim_tasks().await.map_err(|e| anyhow!("claim_tasks error: {:?}", e))?;
         for task in tasks {
             let core = self.clone();
             tokio::spawn(async move {
@@ -152,23 +152,13 @@ impl WitnessFactory {
 
         let tasks: Vec<models::Task> = sqlx::query_as(&query).bind(models::TaskStatus::Inited).fetch_all(&mut tx).await?;
 
-        // if let Some(ref t) = tasks {
-        //     let stmt = format!("update {} set status = $1 where task_id = $2", models::tablenames::TASK);
-        //     sqlx::query(&stmt)
-        //         .bind(models::TaskStatus::Witgening)
-        //         .bind(t.clone().task_id)
-        //         .execute(&mut tx)
-        //         .await?;
-        // };
-
         if !tasks.is_empty() {
             let ids: Vec<String> = tasks.iter().map(|t| t.task_id.clone()).collect();
-            let stmt = format!("update {} set status = $1 where task_id in $2", models::tablenames::TASK);
-            sqlx::query(&stmt)
-                .bind(models::TaskStatus::Witgening)
-                .bind(ids)
-                .execute(&mut tx)
-                .await?;
+            let query_set = str_vec_to_query_set(ids);
+            log::debug!("query_set: {:?}", query_set);
+            let stmt = format!("update {} set status = $1 where task_id in {}", models::tablenames::TASK, query_set);
+            log::debug!("stmt: {:?}", stmt);
+            sqlx::query(&stmt).bind(models::TaskStatus::Witgening).execute(&mut tx).await?;
         }
 
         tx.commit().await?;
@@ -188,4 +178,17 @@ impl WitnessFactory {
             .await?;
         Ok(())
     }
+}
+
+fn str_vec_to_query_set(strs: Vec<String>) -> String {
+    let mut s = "(".to_owned();
+    for str_i in strs {
+        s = s + "'";
+        s = s + &str_i;
+        s = s + "'";
+        s = s + ",";
+    }
+    s.pop();
+    s = s + ")";
+    s.to_string()
 }
