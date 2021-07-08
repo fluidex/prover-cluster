@@ -15,6 +15,7 @@ pub struct WitnessFactory {
     db_pool: sqlx::Pool<DbType>,
     witgen_interval: Duration,
     circuits: HashMap<String, String>,
+    n_workers: u64,
 }
 
 impl WitnessFactory {
@@ -33,19 +34,25 @@ impl WitnessFactory {
             db_pool,
             witgen_interval: config.witgen.interval(),
             circuits,
+            n_workers: config.witgen.n_workers,
         })
     }
 
     pub async fn run(self) {
         let mut timer = tokio::time::interval(self.witgen_interval);
 
-        // TODO: use worker_pool for multiple workers
+        // TODO: refactor to worker_pool
         loop {
             timer.tick().await;
             log::debug!("ticktock!");
-            if let Err(e) = self.clone().run_inner().await {
-                log::error!("{}", e);
-            };
+            for _ in 0..self.n_workers {
+                let core = self.clone();
+                tokio::spawn(async move {
+                    if let Err(e) = core.run_inner().await {
+                        log::error!("{}", e);
+                    };
+                });
+            }
         }
     }
 
