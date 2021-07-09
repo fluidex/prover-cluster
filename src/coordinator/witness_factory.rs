@@ -176,15 +176,8 @@ impl WitnessFactory {
 }
 
 fn str_vec_to_query_set(strs: Vec<String>) -> String {
-    let mut s = "(".to_owned();
-    for str_i in strs {
-        s += "'";
-        s += &str_i;
-        s += "'";
-        s += ",";
-    }
-    s.pop();
-    s += ")";
-
+    let mut s = "('".to_owned();
+    s += &strs.join("','");
+    s += "')";
     s
 }
