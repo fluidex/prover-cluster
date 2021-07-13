@@ -3,9 +3,11 @@ CREATE TYPE task_status AS ENUM('inited', 'witgening', 'ready', 'assigned', 'pro
 CREATE TABLE task (
     task_id VARCHAR(30) NOT NULL,
     circuit VARCHAR(30) NOT NULL,
+    block_id integer NOT NULL, -- TODO: combine with task_id
     input jsonb NOT NULL,
     output jsonb DEFAULT NULL,
     witness BYTEA DEFAULT NULL,
+    public_input BYTEA DEFAULT NULL,
     proof BYTEA DEFAULT NULL,
     status task_status NOT NULL DEFAULT 'inited',
     prover_id VARCHAR(30) DEFAULT NULL,

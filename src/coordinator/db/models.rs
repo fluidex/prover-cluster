@@ -38,6 +38,7 @@ pub struct Task {
     // pub id: i64,
     pub task_id: String,
     pub circuit: CircuitType,
+    pub block_id: i64,
     pub input: serde_json::Value,
     pub output: Option<serde_json::Value>,
     pub witness: Option<Vec<u8>>,
