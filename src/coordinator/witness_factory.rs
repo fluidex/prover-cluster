@@ -16,6 +16,8 @@ pub struct WitnessFactory {
     witgen_interval: Duration,
     circuits: HashMap<String, String>,
     n_workers: u64,
+    max_ready_tasks: u64,
+    proved_clear_after: u64,
 }
 
 impl WitnessFactory {
@@ -35,6 +37,8 @@ impl WitnessFactory {
             witgen_interval: config.witgen.interval(),
             circuits,
             n_workers: config.witgen.n_workers,
+            max_ready_tasks: config.witgen.max_ready_tasks,
+            proved_clear_after: config.witgen.proved_clear_after,
         })
     }
 
@@ -61,6 +65,12 @@ impl WitnessFactory {
                 };
             });
         }
+        let core = self.clone();
+        tokio::spawn(async move {
+            if let Err(e) = core.clear_proved_witness().await {
+                log::error!("{}", e);
+            };
+        });
         Ok(())
     }
 
@@ -133,7 +143,23 @@ impl WitnessFactory {
         Ok(())
     }
 
+    pub async fn clear_proved_witness(self) -> Result<(), anyhow::Error> {
+        let stmt = format!(
+            "update {} set witness = null where status = $1 and updated_time < current_timestamp - interval '{} seconds'",
+            models::tablenames::TASK,
+            self.proved_clear_after,
+        );
+        log::debug!("stmt: {:?}", stmt);
+
+        sqlx::query(&stmt).bind(models::TaskStatus::Proved).execute(&self.db_pool).await?;
+        Ok(())
+    }
+
     async fn claim_tasks(&mut self) -> Result<Vec<models::Task>, anyhow::Error> {
+        if self.ready_task_full().await? {
+            return Ok(vec![]);
+        }
+
         let mut tx = self.db_pool.begin().await?;
 
         let query = format!(
@@ -158,6 +184,17 @@ impl WitnessFactory {
 
         tx.commit().await?;
         Ok(tasks)
+    }
+
+    async fn ready_task_full(&self) -> Result<bool, anyhow::Error> {
+        let stmt = format!("select count(*) from {} where status = $1", models::tablenames::TASK);
+
+        let row: (i64,) = sqlx::query_as(&stmt)
+            .bind(models::TaskStatus::Ready)
+            .fetch_one(&self.db_pool)
+            .await?;
+
+        Ok(row.0 as u64 > self.max_ready_tasks)
     }
 
     async fn save_wtns_to_db(&mut self, task_id: String, witness: Vec<u8>) -> Result<(), anyhow::Error> {

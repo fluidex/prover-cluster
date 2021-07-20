@@ -35,6 +35,8 @@ pub struct Settings {
 pub struct WitGen {
     pub interval: u64,
     pub n_workers: u64,
+    pub max_ready_tasks: u64,
+    pub proved_clear_after: u64,
     pub circuits: HashMap<String, String>,
 }
 
