@@ -3,7 +3,7 @@ db: "postgres://coordinator:coordinator_AA9944@127.0.0.1:5433/prover_cluster"
 witgen:
   interval: ${WITGEN_INTERVAL}
   n_workers: ${N_WORKERS}
-  max_ready_tasks: ${WITGEN_MAX_READY_TASKS}
-  proved_clear_after: ${WITGEN_PROVED_CLEAR_AFTER}
+  max_ready_tasks: 1000
+  proved_clear_after: 172800
   circuits:
     block: "${TARGET_CIRCUIT_DIR}/circuit.fast"
