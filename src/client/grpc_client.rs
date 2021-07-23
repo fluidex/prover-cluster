@@ -6,7 +6,6 @@ use bellman_ce::{
     pairing::bn256::Bn256,
     plonk::better_cs::{cs::PlonkCsWidth4WithNextStepParams, keys::Proof},
 };
-use libc::{c_char, sysconf, _SC_HOST_NAME_MAX};
 
 #[derive(Clone)]
 pub struct GrpcClient {
@@ -83,13 +82,7 @@ impl GrpcClient {
 }
 
 fn gethostname() -> String {
-    let max_hostname_len = unsafe { sysconf(_SC_HOST_NAME_MAX) };
-    let mut buffer = vec![0; (max_hostname_len as usize) + 1];
-    let result = unsafe { libc::gethostname(buffer.as_mut_ptr() as *mut c_char, buffer.len()) };
-    if result != 0 {
-        panic!("Failed to gethostname: {:?}", std::io::Error::last_os_error());
-    }
-    let end = buffer.iter().position(|&b| b == 0).unwrap_or_else(|| buffer.len());
-    buffer.resize(end, 0);
-    String::from_utf8_lossy(&buffer).into_owned()
+    let mut buf = [0u8; 64];
+    let hostname = nix::unistd::gethostname(&mut buf).expect("Failed getting hostname");
+    hostname.to_string_lossy().into_owned()
 }
