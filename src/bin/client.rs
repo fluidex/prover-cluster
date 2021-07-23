@@ -24,8 +24,13 @@ fn main() {
     main_runtime.spawn(watcher.run(req_receiver));
     let poll_interval = settings.poll_interval();
     main_runtime.block_on(async move {
-        let mut timer = time::interval(poll_interval);
+        req_sender
+            .clone()
+            .send(WatchRequest::Register)
+            .await
+            .expect("watch receiver dropped");
 
+        let mut timer = time::interval(poll_interval);
         loop {
             timer.tick().await;
             req_sender

@@ -23,6 +23,23 @@ impl GrpcClient {
         }
     }
 
+    pub async fn register(&mut self) -> Result<(), anyhow::Error> {
+        let hostname = gethostname();
+        log::info!("register client for hostname {}", &hostname);
+        let request = tonic::Request::new(RegisterRequest { hostname });
+
+        let mut client = ClusterClient::connect(self.upstream.clone()).await?;
+        match client.register(request).await {
+            Ok(t) => {
+                let prover_id = t.into_inner().prover_id;
+                log::info!("set client prover_id {}", &prover_id);
+                self.id = prover_id;
+                Ok(())
+            }
+            Err(e) => Err(anyhow!(e)),
+        }
+    }
+
     pub async fn poll_task(&self) -> Result<Task, anyhow::Error> {
         let mut client = ClusterClient::connect(self.upstream.clone()).await?;
 
@@ -62,4 +79,10 @@ impl GrpcClient {
             Err(e) => Err(anyhow!(e)),
         }
     }
+}
+
+fn gethostname() -> String {
+    let mut buf = [0u8; 64];
+    let hostname = nix::unistd::gethostname(&mut buf).expect("Failed getting hostname");
+    hostname.to_string_lossy().into_owned()
 }
