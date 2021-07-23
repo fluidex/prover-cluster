@@ -27,7 +27,7 @@ impl GrpcClient {
     pub async fn register(&mut self) -> Result<(), anyhow::Error> {
         let hostname = gethostname();
         log::info!("register client for hostname {}", &hostname);
-        let request = tonic::Request::new(RegisterRequest { hostname: hostname });
+        let request = tonic::Request::new(RegisterRequest { hostname });
 
         let mut client = ClusterClient::connect(self.upstream.clone()).await?;
         match client.register(request).await {
