@@ -6,6 +6,7 @@ use bellman_ce::{
     pairing::bn256::Bn256,
     plonk::better_cs::{cs::PlonkCsWidth4WithNextStepParams, keys::Proof},
 };
+use libc::{c_char, sysconf, _SC_HOST_NAME_MAX};
 
 #[derive(Clone)]
 pub struct GrpcClient {
@@ -20,6 +21,23 @@ impl GrpcClient {
             id: config.prover_id.clone(),
             circuit: config.circuit(),
             upstream: config.upstream.clone(),
+        }
+    }
+
+    pub async fn register(&mut self) -> Result<(), anyhow::Error> {
+        let hostname = gethostname();
+        log::info!("register client for hostname {}", &hostname);
+        let request = tonic::Request::new(RegisterRequest { hostname: hostname });
+
+        let mut client = ClusterClient::connect(self.upstream.clone()).await?;
+        match client.register(request).await {
+            Ok(t) => {
+                let prover_id = t.into_inner().prover_id;
+                log::info!("set client prover_id {}", &prover_id);
+                self.id = prover_id;
+                Ok(())
+            }
+            Err(e) => Err(anyhow!(e)),
         }
     }
 
@@ -62,4 +80,16 @@ impl GrpcClient {
             Err(e) => Err(anyhow!(e)),
         }
     }
+}
+
+fn gethostname() -> String {
+    let max_hostname_len = unsafe { sysconf(_SC_HOST_NAME_MAX) };
+    let mut buffer = vec![0; (max_hostname_len as usize) + 1];
+    let result = unsafe { libc::gethostname(buffer.as_mut_ptr() as *mut c_char, buffer.len()) };
+    if result != 0 {
+        panic!("Failed to gethostname: {:?}", std::io::Error::last_os_error());
+    }
+    let end = buffer.iter().position(|&b| b == 0).unwrap_or_else(|| buffer.len());
+    buffer.resize(end, 0);
+    String::from_utf8_lossy(&buffer).into_owned()
 }

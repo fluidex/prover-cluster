@@ -127,6 +127,13 @@ impl Coordinator {
 
 #[tonic::async_trait]
 impl Cluster for Coordinator {
+    async fn register(&self, request: Request<RegisterRequest>) -> Result<Response<RegisterResponse>, Status> {
+        let ControllerDispatch(act, rt) =
+            ControllerDispatch::new(move |ctrl: &mut Controller| Box::pin(ctrl.register(request.into_inner())));
+        self.task_dispacther.send(act).await.map_err(map_dispatch_err)?;
+        map_dispatch_ret(rt.await)
+    }
+
     async fn poll_task(&self, request: Request<PollTaskRequest>) -> Result<Response<Task>, Status> {
         let ControllerDispatch(act, rt) =
             ControllerDispatch::new(move |ctrl: &mut Controller| Box::pin(ctrl.poll_task(request.into_inner())));

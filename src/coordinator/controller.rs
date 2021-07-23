@@ -21,6 +21,12 @@ impl Controller {
         })
     }
 
+    pub async fn register(&mut self, request: RegisterRequest) -> Result<RegisterResponse, Status> {
+        Ok(RegisterResponse {
+            prover_id: format!("{}-{}", request.hostname, chrono::Utc::now().timestamp_millis()),
+        })
+    }
+
     pub async fn poll_task(&mut self, request: PollTaskRequest) -> Result<Task, Status> {
         let circuit = Circuit::from_i32(request.circuit).ok_or_else(|| Status::new(Code::InvalidArgument, "unknown circuit"))?;
 

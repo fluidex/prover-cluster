@@ -17,13 +17,21 @@ impl Watcher {
         }
     }
 
-    pub async fn run(/*mut*/ self, mut watch_req: mpsc::Receiver<WatchRequest>) {
+    pub async fn run(mut self, mut watch_req: mpsc::Receiver<WatchRequest>) {
         while let Some(request) = watch_req.next().await {
             if self.is_busy.load(Ordering::SeqCst) {
                 continue;
             }
 
             match request {
+                WatchRequest::Register => {
+                    log::debug!("WatchRequest::Register");
+                    self.is_busy.store(true, Ordering::SeqCst);
+                    if let Err(e) = self.grpc_client.register().await {
+                        log::error!("register client error {:?}", e);
+                    }
+                    self.is_busy.store(false, Ordering::SeqCst);
+                }
                 WatchRequest::PollTask => {
                     log::debug!("WatchRequest::PollTask");
                     self.is_busy.store(true, Ordering::SeqCst);
@@ -63,5 +71,6 @@ impl Watcher {
 
 #[derive(Debug)]
 pub enum WatchRequest {
+    Register,
     PollTask,
 }

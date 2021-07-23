@@ -3,8 +3,17 @@ syntax = "proto3";
 package cluster;
 
 service Cluster {
+  rpc Register(RegisterRequest) returns (RegisterResponse) {}
   rpc PollTask(PollTaskRequest) returns (Task) {}
   rpc SubmitProof(SubmitProofRequest) returns (SubmitProofResponse) {}
+}
+
+message RegisterRequest {
+    string hostname = 1;
+}
+
+message RegisterResponse {
+    string prover_id = 1;
 }
 
 enum Circuit {
