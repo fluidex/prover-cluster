@@ -1,7 +1,7 @@
-use crate::coordinator::db::{ConnectionType, MIGRATOR};
 use crate::coordinator::{Controller, Settings, WitnessFactory};
 use crate::pb::cluster_server::Cluster;
 use crate::pb::*;
+use fluidex_common::db::{ConnectionType, MIGRATOR};
 use sqlx::Connection;
 use std::fmt::Debug;
 use std::pin::Pin;

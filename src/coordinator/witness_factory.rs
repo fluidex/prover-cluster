@@ -1,6 +1,7 @@
-use crate::coordinator::db::{models, DbType, PoolOptions};
 use crate::coordinator::Settings;
 use anyhow::{anyhow, bail};
+use fluidex_common::db::models::{tablenames, task};
+use fluidex_common::db::{DbType, PoolOptions};
 use std::collections::HashMap;
 use std::fs::File;
 use std::io::prelude::*;
@@ -74,7 +75,7 @@ impl WitnessFactory {
         Ok(())
     }
 
-    async fn witgen(mut self, task: models::Task) -> Result<(), anyhow::Error> {
+    async fn witgen(mut self, task: task::Task) -> Result<(), anyhow::Error> {
         log::info!("generating witness for task {:?}", task.task_id);
 
         // create temp dir
@@ -146,16 +147,16 @@ impl WitnessFactory {
     pub async fn clear_proved_witness(self) -> Result<(), anyhow::Error> {
         let stmt = format!(
             "update {} set witness = null where status = $1 and updated_time < current_timestamp - interval '{} seconds'",
-            models::tablenames::TASK,
+            tablenames::TASK,
             self.proved_clear_after,
         );
         log::debug!("stmt: {:?}", stmt);
 
-        sqlx::query(&stmt).bind(models::TaskStatus::Proved).execute(&self.db_pool).await?;
+        sqlx::query(&stmt).bind(task::TaskStatus::Proved).execute(&self.db_pool).await?;
         Ok(())
     }
 
-    async fn claim_tasks(&mut self) -> Result<Vec<models::Task>, anyhow::Error> {
+    async fn claim_tasks(&mut self) -> Result<Vec<task::Task>, anyhow::Error> {
         if self.ready_task_full().await? {
             return Ok(vec![]);
         }
@@ -167,19 +168,19 @@ impl WitnessFactory {
             from {}
             where status = $1
             limit {}",
-            models::tablenames::TASK,
+            tablenames::TASK,
             self.n_workers,
         );
 
-        let tasks: Vec<models::Task> = sqlx::query_as(&query).bind(models::TaskStatus::Inited).fetch_all(&mut tx).await?;
+        let tasks: Vec<task::Task> = sqlx::query_as(&query).bind(task::TaskStatus::Inited).fetch_all(&mut tx).await?;
 
         if !tasks.is_empty() {
             let ids: Vec<String> = tasks.iter().map(|t| t.task_id.clone()).collect();
             let query_set = str_vec_to_query_set(ids);
             log::debug!("query_set: {:?}", query_set);
-            let stmt = format!("update {} set status = $1 where task_id in {}", models::tablenames::TASK, query_set);
+            let stmt = format!("update {} set status = $1 where task_id in {}", tablenames::TASK, query_set);
             log::debug!("stmt: {:?}", stmt);
-            sqlx::query(&stmt).bind(models::TaskStatus::Witgening).execute(&mut tx).await?;
+            sqlx::query(&stmt).bind(task::TaskStatus::Witgening).execute(&mut tx).await?;
         }
 
         tx.commit().await?;
@@ -187,24 +188,18 @@ impl WitnessFactory {
     }
 
     async fn ready_task_full(&self) -> Result<bool, anyhow::Error> {
-        let stmt = format!("select count(*) from {} where status = $1", models::tablenames::TASK);
+        let stmt = format!("select count(*) from {} where status = $1", tablenames::TASK);
 
-        let row: (i64,) = sqlx::query_as(&stmt)
-            .bind(models::TaskStatus::Ready)
-            .fetch_one(&self.db_pool)
-            .await?;
+        let row: (i64,) = sqlx::query_as(&stmt).bind(task::TaskStatus::Ready).fetch_one(&self.db_pool).await?;
 
         Ok(row.0 as u64 > self.max_ready_tasks)
     }
 
     async fn save_wtns_to_db(&mut self, task_id: String, witness: Vec<u8>) -> Result<(), anyhow::Error> {
-        let stmt = format!(
-            "update {} set witness = $1, status = $2 where task_id = $3",
-            models::tablenames::TASK
-        );
+        let stmt = format!("update {} set witness = $1, status = $2 where task_id = $3", tablenames::TASK);
         sqlx::query(&stmt)
             .bind(witness)
-            .bind(models::TaskStatus::Ready)
+            .bind(task::TaskStatus::Ready)
             .bind(task_id)
             .execute(&self.db_pool)
             .await?;

@@ -1,7 +1,7 @@
 use crate::coordinator::config::*;
-use crate::coordinator::db::{models, DbType, PoolOptions};
 use crate::pb::*;
-// use std::collections::BTreeMap;
+use fluidex_common::db::models::{tablenames, task};
+use fluidex_common::db::{DbType, PoolOptions};
 use tonic::{Code, Status};
 
 #[derive(Debug)]
@@ -48,7 +48,7 @@ impl Controller {
         }
     }
 
-    async fn query_idle_task(&mut self, circuit: Circuit) -> Result<Option<models::Task>, Status> {
+    async fn query_idle_task(&mut self, circuit: Circuit) -> Result<Option<task::Task>, Status> {
         let order = match self.proving_order {
             ProvingOrder::Oldest => "ASC",
             ProvingOrder::Latest => "DESC",
@@ -58,12 +58,12 @@ impl Controller {
             from {}
             where circuit = $1 and status = $2
             order by created_time {}",
-            models::tablenames::TASK,
+            tablenames::TASK,
             order
         );
-        sqlx::query_as::<_, models::Task>(&query)
-            .bind(models::CircuitType::from(circuit))
-            .bind(models::TaskStatus::Ready)
+        sqlx::query_as::<_, task::Task>(&query)
+            .bind(task::CircuitType::from(circuit))
+            .bind(task::TaskStatus::Ready)
             .fetch_optional(&self.db_pool)
             .await
             .map_err(|e| {
@@ -82,13 +82,10 @@ impl Controller {
 
     // Failure is acceptable here. We can re-assign the task to another prover later.
     async fn assign_task(&mut self, task_id: String, prover_id: String) -> anyhow::Result<()> {
-        let stmt = format!(
-            "update {} set prover_id = $1, status = $2 where task_id = $3",
-            models::tablenames::TASK
-        );
+        let stmt = format!("update {} set prover_id = $1, status = $2 where task_id = $3", tablenames::TASK);
         sqlx::query(&stmt)
             .bind(prover_id)
-            .bind(models::TaskStatus::Assigned)
+            .bind(task::TaskStatus::Assigned)
             .bind(task_id)
             .execute(&self.db_pool)
             .await?;
@@ -99,13 +96,13 @@ impl Controller {
     async fn store_proof(&mut self, req: SubmitProofRequest) -> anyhow::Result<()> {
         let stmt = format!(
             "update {} set public_input = $1, proof = $2, prover_id = $3, status = $4 where task_id = $5",
-            models::tablenames::TASK
+            tablenames::TASK
         );
         sqlx::query(&stmt)
             .bind(req.public_input)
             .bind(req.proof)
             .bind(req.prover_id)
-            .bind(models::TaskStatus::Proved)
+            .bind(task::TaskStatus::Proved)
             .bind(req.task_id)
             .execute(&self.db_pool)
             .await?;
