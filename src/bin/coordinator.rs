@@ -1,10 +1,11 @@
+use fluidex_common::non_blocking_tracing;
 use prover_cluster::coordinator::{config, Coordinator};
 use prover_cluster::pb::cluster_server::ClusterServer;
 
 #[tokio::main]
 async fn main() {
     dotenv::dotenv().ok();
-    env_logger::init();
+    let _guard = non_blocking_tracing::setup();
     log::info!("prover coordinator started");
 
     let mut conf = config_rs::Config::new();

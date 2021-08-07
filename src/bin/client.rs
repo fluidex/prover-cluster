@@ -1,3 +1,4 @@
+use fluidex_common::non_blocking_tracing;
 use futures::{channel::mpsc, SinkExt};
 use prover_cluster::client::{
     config,
@@ -9,7 +10,7 @@ fn main() {
     let /*mut*/ main_runtime = Runtime::new().expect("main runtime start");
 
     dotenv::dotenv().ok();
-    env_logger::init();
+    let _guard = non_blocking_tracing::setup();
     log::info!("prover client started");
 
     let mut conf = config_rs::Config::new();
