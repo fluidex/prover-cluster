@@ -190,7 +190,7 @@ impl WitnessFactory {
     async fn ready_task_full(&self) -> Result<bool, anyhow::Error> {
         let stmt = format!("select count(*) from {} where status = $1", tablenames::TASK);
 
-        let row: (i64,) = sqlx::query_as(&stmt).bind(task::TaskStatus::Ready).fetch_one(&self.db_pool).await?;
+        let row: (i64,) = sqlx::query_as(&stmt).bind(task::TaskStatus::Witgened).fetch_one(&self.db_pool).await?;
 
         Ok(row.0 as u64 > self.max_ready_tasks)
     }
@@ -199,7 +199,7 @@ impl WitnessFactory {
         let stmt = format!("update {} set witness = $1, status = $2 where task_id = $3", tablenames::TASK);
         sqlx::query(&stmt)
             .bind(witness)
-            .bind(task::TaskStatus::Ready)
+            .bind(task::TaskStatus::Witgened)
             .bind(task_id)
             .execute(&self.db_pool)
             .await?;

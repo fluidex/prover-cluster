@@ -63,7 +63,7 @@ impl Controller {
         );
         sqlx::query_as::<_, task::Task>(&query)
             .bind(task::CircuitType::from(circuit))
-            .bind(task::TaskStatus::Ready)
+            .bind(task::TaskStatus::Witgened)
             .fetch_optional(&self.db_pool)
             .await
             .map_err(|e| {
@@ -85,7 +85,7 @@ impl Controller {
         let stmt = format!("update {} set prover_id = $1, status = $2 where task_id = $3", tablenames::TASK);
         sqlx::query(&stmt)
             .bind(prover_id)
-            .bind(task::TaskStatus::Assigned)
+            .bind(task::TaskStatus::Proving)
             .bind(task_id)
             .execute(&self.db_pool)
             .await?;
