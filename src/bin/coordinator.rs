@@ -1,6 +1,6 @@
+use fluidex_common::non_blocking_tracing;
 use prover_cluster::coordinator::{config, Coordinator};
 use prover_cluster::pb::cluster_server::ClusterServer;
-use fluidex_common::non_blocking_tracing;
 
 #[tokio::main]
 async fn main() {

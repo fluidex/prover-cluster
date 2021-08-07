@@ -1,5 +1,5 @@
-use futures::{channel::mpsc, SinkExt};
 use fluidex_common::non_blocking_tracing;
+use futures::{channel::mpsc, SinkExt};
 use prover_cluster::client::{
     config,
     watch::{WatchRequest, Watcher},
