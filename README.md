@@ -1,6 +1,6 @@
 # Plonk Prover Cluster
 
-ZK-Rollup is a promising layer 2 technology to help scale Ethereum while a ZK-Rollup system needs a lot of cryptography computations when `proving`. As we estimitated in [Fluidex Labs](https://github.com/Fluidex), at least thoudsands of CPU cores are needed to achieve hundreds of TPS. And that is the motivation why we develop this project to work with PLONK proof system.
+ZK-Rollup is a promising layer 2 technology to help scale Ethereum while a ZK-Rollup system needs a lot of cryptography computations when `proving`. As we estimitated in [FluiDex Labs](https://github.com/Fluidex), at least thoudsands of CPU cores are needed to achieve hundreds of TPS. And that is the motivation why we develop this project to work with PLONK proof system.
 
 To generate proofs, two phases are involved: witness generation and proof calculation. A witness is mapped from a given input to the circuit, and a proof is generated according to the witness. The later one is the most computation-heavy part and, as we state, may require 10-100 or more CPU time.
 
