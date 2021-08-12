@@ -146,7 +146,7 @@ checksum = "cdb031dd78e28731d87d56cc8ffef4a8f36ca26c38fe2de700543e627f8a464a"
 [[package]]
 name = "babyjubjub-rs"
 version = "0.0.8"
-source = "git+https://github.com/Fluidex/babyjubjub-rs#b6caa0992825e59de7396a94503aab1ff62722c6"
+source = "git+https://github.com/fluidex/babyjubjub-rs#b6caa0992825e59de7396a94503aab1ff62722c6"
 dependencies = [
  "arrayref",
  "blake",
@@ -215,7 +215,7 @@ dependencies = [
 [[package]]
 name = "bellman_vk_codegen"
 version = "0.2.0"
-source = "git+https://github.com/Fluidex/solidity_plonk_verifier.git#77588cd43b579b764cbb222084b7587d26c46996"
+source = "git+https://github.com/fluidex/solidity_plonk_verifier.git#77588cd43b579b764cbb222084b7587d26c46996"
 dependencies = [
  "bellman_ce",
  "handlebars",
@@ -702,7 +702,7 @@ dependencies = [
 [[package]]
 name = "ff_ce"
 version = "0.13.1"
-source = "git+https://github.com/Fluidex/ff#5eca8bad837b0b8995c991c03a3c99d1b61cf02c"
+source = "git+https://github.com/fluidex/ff#5eca8bad837b0b8995c991c03a3c99d1b61cf02c"
 dependencies = [
  "byteorder",
  "ff_derive_ce 0.10.0",
@@ -727,7 +727,7 @@ dependencies = [
 [[package]]
 name = "ff_derive_ce"
 version = "0.10.0"
-source = "git+https://github.com/Fluidex/ff#5eca8bad837b0b8995c991c03a3c99d1b61cf02c"
+source = "git+https://github.com/fluidex/ff#5eca8bad837b0b8995c991c03a3c99d1b61cf02c"
 dependencies = [
  "num-bigint 0.4.0",
  "num-integer",
@@ -759,7 +759,7 @@ checksum = "37ab347416e802de484e4d03c7316c48f1ecb56574dfd4a46a80f173ce1de04d"
 [[package]]
 name = "fluidex-common"
 version = "0.1.0"
-source = "git+https://github.com/Fluidex/common-rs?branch=master#f519eeb2386ee3386282d5307be77d6b26e54b3b"
+source = "git+https://github.com/fluidex/common-rs?branch=master#f519eeb2386ee3386282d5307be77d6b26e54b3b"
 dependencies = [
  "babyjubjub-rs",
  "backtrace",
@@ -1792,7 +1792,7 @@ checksum = "8b870d8c151b6f2fb93e84a13146138f05d02ed11c7e7c54f8826aaaf7c9f184"
 [[package]]
 name = "plonkit"
 version = "0.1.0"
-source = "git+https://github.com/Fluidex/plonkit.git#ef1bbc3ed2cf0b4d277250ad5136d0f4c8a1409d"
+source = "git+https://github.com/fluidex/plonkit.git#ef1bbc3ed2cf0b4d277250ad5136d0f4c8a1409d"
 dependencies = [
  "anyhow",
  "bellman_ce",
@@ -1817,7 +1817,7 @@ dependencies = [
 [[package]]
 name = "poseidon-rs"
 version = "0.0.8"
-source = "git+https://github.com/Fluidex/poseidon-rs#406496055aec6eecbf616377a87d412c6e9bda0d"
+source = "git+https://github.com/fluidex/poseidon-rs#406496055aec6eecbf616377a87d412c6e9bda0d"
 dependencies = [
  "ff_ce 0.13.1",
  "rand 0.8.3",

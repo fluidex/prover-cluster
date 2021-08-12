@@ -16,7 +16,7 @@ RUN apt-get install -y --no-install-recommends \
     nlohmann-json3-dev \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
-RUN cargo install --git https://github.com/Fluidex/plonkit && rm -rf /usr/local/cargo/registry
+RUN cargo install --git https://github.com/fluidex/plonkit && rm -rf /usr/local/cargo/registry
 CMD plonkit
 
 FROM node:lts-buster as circuit
@@ -32,7 +32,7 @@ RUN apt-get install -y --no-install-recommends \
 RUN npm -g install snarkit
 
 WORKDIR /opt
-RUN git clone https://github.com/Fluidex/circuits
+RUN git clone https://github.com/fluidex/circuits
 # the first install is trick to avoid a npm i failure ...
 RUN cd circuits \
     && rm package-lock.json \
@@ -44,7 +44,7 @@ RUN cd circuits \
     ${N_TXS:=2} ${BALANCE_LEVELS:-2} ${ORDER_LEVELS:-7} ${ACCOUNT_LEVELS:-2} >> block/circuit.circom \
     && snarkit compile block
 # also add an simple circuit for test...
-RUN git clone https://github.com/Fluidex/plonkit
+RUN git clone https://github.com/fluidex/plonkit
 RUN cd plonkit && npm i \
     && cd test/circuits \
     && snarkit compile poseidon

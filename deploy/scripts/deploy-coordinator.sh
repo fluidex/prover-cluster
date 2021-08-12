@@ -52,10 +52,10 @@ nvm use --lts
 npm -g install snarkit
 
 mkdir -p $HOME/repos
-git clone https://github.com/Fluidex/circuits.git $HOME/repos/Fluidex/circuits
-git clone https://github.com/Fluidex/prover-cluster.git $HOME/repos/Fluidex/prover-cluster
+git clone https://github.com/fluidex/circuits.git $HOME/repos/fluidex/circuits
+git clone https://github.com/fluidex/prover-cluster.git $HOME/repos/fluidex/prover-cluster
 
-cd $HOME/repos/Fluidex/circuits
+cd $HOME/repos/fluidex/circuits
 npm install
 cp src block -r
 mv block/block.circom block/circuit.circom
@@ -64,7 +64,7 @@ component main = Block(%d, %d, %d, %d);
 ' $N_TXS $BALANCE_LEVELS $ORDER_LEVELS $ACCOUNT_LEVELS >> block/circuit.circom
 snarkit compile block
 
-cd $HOME/repos/Fluidex/prover-cluster
+cd $HOME/repos/fluidex/prover-cluster
 cargo build --release
 printf '
 port: %d
@@ -73,8 +73,8 @@ witgen:
   interval: 10000
   n_workers: 5
   circuits:
-    block: "%s/repos/Fluidex/circuits/block/circuit"
-' $PORT $DB_URL $HOME > $HOME/repos/Fluidex/prover-cluster/config/coordinator.yaml
+    block: "%s/repos/fluidex/circuits/block/circuit"
+' $PORT $DB_URL $HOME > $HOME/repos/fluidex/prover-cluster/config/coordinator.yaml
 
-# $HOME/repos/Fluidex/prover-cluster/target/release/coordinator
-nohup $HOME/repos/Fluidex/prover-cluster/target/release/coordinator >> $HOME/repos/Fluidex/prover-cluster/log-coordinator.txt 2>&1 &
+# $HOME/repos/fluidex/prover-cluster/target/release/coordinator
+nohup $HOME/repos/fluidex/prover-cluster/target/release/coordinator >> $HOME/repos/fluidex/prover-cluster/log-coordinator.txt 2>&1 &

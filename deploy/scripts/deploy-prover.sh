@@ -41,7 +41,7 @@ source $HOME/.cargo/env
 # ' >> $HOME/.cargo/config
 
 # install plonkit
-cargo install --git https://github.com/Fluidex/plonkit
+cargo install --git https://github.com/fluidex/plonkit
 
 # install snarkit
 curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.38.0/install.sh | sh
@@ -55,10 +55,10 @@ nvm use --lts
 npm -g install snarkit
 
 mkdir -p $HOME/repos
-git clone https://github.com/Fluidex/circuits.git $HOME/repos/Fluidex/circuits
-git clone https://github.com/Fluidex/prover-cluster.git $HOME/repos/Fluidex/prover-cluster
+git clone https://github.com/fluidex/circuits.git $HOME/repos/fluidex/circuits
+git clone https://github.com/fluidex/prover-cluster.git $HOME/repos/fluidex/prover-cluster
 
-cd $HOME/repos/Fluidex/circuits
+cd $HOME/repos/fluidex/circuits
 npm install
 cp src block -r
 mv block/block.circom block/circuit.circom
@@ -67,23 +67,23 @@ component main = Block(%d, %d, %d, %d);
 ' $N_TXS $BALANCE_LEVELS $ORDER_LEVELS $ACCOUNT_LEVELS >> block/circuit.circom
 snarkit compile block
 
-cd $HOME/repos/Fluidex/circuits/block
+cd $HOME/repos/fluidex/circuits/block
 plonkit setup --power 20 --srs_monomial_form mon.key
 plonkit dump-lagrange -c circuit.r1cs --srs_monomial_form mon.key --srs_lagrange_form lag.key
 plonkit export-verification-key -c circuit.r1cs --srs_monomial_form mon.key
 
-cd $HOME/repos/Fluidex/prover-cluster
+cd $HOME/repos/fluidex/prover-cluster
 cargo build --release
 printf '
 prover_id: %s
 upstream: "%s"
 poll_interval: 10000
 circuit: "block"
-r1cs: "%s/repos/Fluidex/circuits/block/circuit.r1cs"
-srs_monomial_form: "%s/repos/Fluidex/circuits/block/mon.key"
-srs_lagrange_form: "%s/repos/Fluidex/circuits/block/lag.key"
-vk: "%s/repos/Fluidex/circuits/block/vk.bin"
-' $PROVER_ID $UPSTREAM $HOME $HOME $HOME $HOME > $HOME/repos/Fluidex/prover-cluster/config/client.yaml
+r1cs: "%s/repos/fluidex/circuits/block/circuit.r1cs"
+srs_monomial_form: "%s/repos/fluidex/circuits/block/mon.key"
+srs_lagrange_form: "%s/repos/fluidex/circuits/block/lag.key"
+vk: "%s/repos/fluidex/circuits/block/vk.bin"
+' $PROVER_ID $UPSTREAM $HOME $HOME $HOME $HOME > $HOME/repos/fluidex/prover-cluster/config/client.yaml
 
-# $HOME/repos/Fluidex/prover-cluster/target/release/client
-nohup $HOME/repos/Fluidex/prover-cluster/target/release/client >> $HOME/repos/Fluidex/prover-cluster/log-client.txt 2>&1 &
+# $HOME/repos/fluidex/prover-cluster/target/release/client
+nohup $HOME/repos/fluidex/prover-cluster/target/release/client >> $HOME/repos/fluidex/prover-cluster/log-client.txt 2>&1 &

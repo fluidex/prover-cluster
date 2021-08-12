@@ -7,16 +7,16 @@ edition = "2018"
 [dependencies]
 anyhow = "1.0"
 bellman_ce = { git = "https://github.com/matter-labs/bellman", branch = "beta", default-features = false, features = [ "plonk" ] } # active features depend on build type
-bellman_vk_codegen = { git = "https://github.com/Fluidex/solidity_plonk_verifier.git" }
+bellman_vk_codegen = { git = "https://github.com/fluidex/solidity_plonk_verifier.git" }
 chrono = { version = "0.4.19", features = [ "serde" ] }
 config_rs = { package = "config", version = "0.10.1" }
 dotenv = "0.15.0"
-fluidex-common = { git = "https://github.com/Fluidex/common-rs", branch = "master", features = [ "non-blocking-tracing", "rollup-state-db" ] }
+fluidex-common = { git = "https://github.com/fluidex/common-rs", branch = "master", features = [ "non-blocking-tracing", "rollup-state-db" ] }
 futures = "0.3"
 hex = "0.4.3"
 log = "0.4"
 nix = "0.22.0"
-plonkit = { git = "https://github.com/Fluidex/plonkit.git" }
+plonkit = { git = "https://github.com/fluidex/plonkit.git" }
 prost = "0.7.0"
 prost-types = "0.7.0"
 serde = { version = "1.0.124", features = [ "derive" ] }
