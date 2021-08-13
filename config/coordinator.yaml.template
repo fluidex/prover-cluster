@@ -1,5 +1,5 @@
 port: ${PORT}
-db: "postgres://postgres:postgres_AA9944@127.0.0.1:5434/rollup_state_manager"
+db: ${DB}
 witgen:
   interval: ${WITGEN_INTERVAL}
   n_workers: ${N_WORKERS}
