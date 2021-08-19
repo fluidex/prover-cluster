@@ -81,7 +81,8 @@ impl Controller {
     }
 
     // Failure is acceptable here. We can re-assign the task to another prover later.
-    async fn assign_task(&mut self, task_id: String, prover_id: String) -> anyhow::Result<()> {
+    async fn assign_task(&mut self, task_id: String, mut prover_id: String) -> anyhow::Result<()> {
+        prover_id.truncate(30);
         let stmt = format!("update {} set prover_id = $1, status = $2 where task_id = $3", tablenames::TASK);
         sqlx::query(&stmt)
             .bind(prover_id)
@@ -98,10 +99,12 @@ impl Controller {
             "update {} set public_input = $1, proof = $2, prover_id = $3, status = $4 where task_id = $5",
             tablenames::TASK
         );
+        let mut prover_id = req.prover_id.clone();
+        prover_id.truncate(30);
         sqlx::query(&stmt)
             .bind(req.public_input)
             .bind(req.proof)
-            .bind(req.prover_id)
+            .bind(prover_id)
             .bind(task::TaskStatus::Proved)
             .bind(req.task_id)
             .execute(&self.db_pool)
