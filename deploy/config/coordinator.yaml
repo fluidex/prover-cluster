@@ -1,8 +1,0 @@
-listenaddr: 0.0.0.0
-port: 50055
-db: postgres://coordinator:coordinator_AA9944@exchange_pq/prover_cluster
-witgen:
-  interval: 10000
-  n_workers: 5
-  circuits:
-    block: "/opt/circuit_test/circuit.fast"
