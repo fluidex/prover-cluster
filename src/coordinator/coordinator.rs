@@ -73,6 +73,10 @@ impl Coordinator {
         let mut db_conn = ConnectionType::connect(&config.db).await?;
         MIGRATOR.run(&mut db_conn).await?;
 
+        sqlx::query("update task set status = 'witgened' where status = 'proving'")
+            .execute(&mut db_conn)
+            .await?;
+
         let witness_factory = WitnessFactory::from_config(config).await?;
         tokio::spawn(witness_factory.run());
 
