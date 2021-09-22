@@ -1,4 +1,4 @@
-use crate::coordinator::{Controller, Settings, WitnessFactory};
+use crate::coordinator::{Controller, Settings};
 use crate::pb::cluster_server::Cluster;
 use crate::pb::*;
 use fluidex_common::db::{ConnectionType, MIGRATOR};
@@ -77,9 +77,6 @@ impl Coordinator {
         sqlx::query("update task set status = 'witgened' where status = 'proving'")
             .execute(&mut db_conn)
             .await?;
-
-        let witness_factory = WitnessFactory::from_config(config).await?;
-        tokio::spawn(witness_factory.run());
 
         let controller = Controller::from_config(config).await?;
         let stub = Arc::new(RwLock::new(controller));
