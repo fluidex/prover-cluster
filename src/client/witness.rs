@@ -25,9 +25,7 @@ impl Witness {
             assert!(Path::new(v).exists(), "circuit path doesn't exist: {}", v);
         }
 
-        Ok(Self {
-            circuits,
-        })
+        Ok(Self { circuits })
     }
 
     pub async fn witgen(&self, task: task::Task) -> Result<Vec<u8>, anyhow::Error> {
