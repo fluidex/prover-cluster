@@ -1,4 +1,4 @@
-use crate::client::{GrpcClient, Prover, Settings, Witness};
+use crate::client::{GrpcClient, Prover, Settings, WitnessGenerator};
 use fluidex_common::db::models::{tablenames, task};
 use fluidex_common::db::{DbType, PoolOptions};
 use futures::{channel::mpsc, StreamExt};
@@ -15,7 +15,7 @@ pub struct Watcher {
     grpc_client: GrpcClient,
     is_busy: AtomicBool,
     prover: Prover,
-    witness: Witness,
+    witness_generator: WitnessGenerator,
 }
 
 impl Watcher {
@@ -24,14 +24,14 @@ impl Watcher {
         let grpc_client = GrpcClient::from_config(config);
         let is_busy = AtomicBool::new(false);
         let prover = Prover::from_config(config);
-        let witness = Witness::from_config(&config).await?;
+        let witness_generator = WitnessGenerator::from_config(&config).await?;
 
         Ok(Self {
             db_pool,
             grpc_client,
             is_busy,
             prover,
-            witness,
+            witness_generator,
         })
     }
 
@@ -72,7 +72,7 @@ impl Watcher {
                         }
                     };
 
-                    let witness = match self.witness.witgen(task).await {
+                    let witness = match self.witness_generator.witgen(task).await {
                         Ok(w) => w,
                         Err(e) => {
                             log::error!("witness task({}) error {:?}", task_id, e);

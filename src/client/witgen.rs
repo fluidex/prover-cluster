@@ -10,11 +10,11 @@ use std::process::Command;
 use tempfile::tempdir;
 
 #[derive(Debug, Clone)]
-pub struct Witness {
+pub struct WitnessGenerator {
     circuits: HashMap<String, String>,
 }
 
-impl Witness {
+impl WitnessGenerator {
     pub async fn from_config(config: &Settings) -> anyhow::Result<Self> {
         let circuits = config.witgen.circuits.clone();
         log::debug!("{:?}", circuits);
@@ -25,9 +25,7 @@ impl Witness {
             assert!(Path::new(v).exists(), "circuit path doesn't exist: {}", v);
         }
 
-        Ok(Self {
-            circuits,
-        })
+        Ok(Self { circuits })
     }
 
     pub async fn witgen(&self, task: task::Task) -> Result<Vec<u8>, anyhow::Error> {
