@@ -6,3 +6,8 @@ r1cs: "block.r1cs"
 srs_monomial_form: "setup_2^20.key"
 srs_lagrange_form: "setup_2^20_lagrange.key"
 vk: "vk.bin"
+db: postgres://rollup:rollup_AA9944@127.0.0.1:5433/rollup
+witgen:
+  interval: 2500
+  circuits:
+    block: "circuit"
