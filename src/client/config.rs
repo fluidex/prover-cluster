@@ -33,13 +33,5 @@ impl Settings {
 
 #[derive(Debug, Deserialize, Clone, PartialEq)]
 pub struct WitGen {
-    pub interval: u64,
     pub circuits: HashMap<String, String>,
-}
-
-impl WitGen {
-    /// Converts `self.interval` into `Duration`.
-    pub fn interval(&self) -> Duration {
-        Duration::from_millis(self.interval)
-    }
 }

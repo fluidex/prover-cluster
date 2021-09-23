@@ -7,13 +7,11 @@ use std::io::prelude::*;
 use std::io::Write;
 use std::path::Path;
 use std::process::Command;
-use std::time::Duration;
 use tempfile::tempdir;
 
 #[derive(Debug, Clone)]
 pub struct Witness {
     circuits: HashMap<String, String>,
-    witgen_interval: Duration,
 }
 
 impl Witness {
@@ -28,7 +26,6 @@ impl Witness {
         }
 
         Ok(Self {
-            witgen_interval: config.witgen.interval(),
             circuits,
         })
     }
