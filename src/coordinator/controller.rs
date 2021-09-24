@@ -42,7 +42,6 @@ impl Controller {
                 Ok(Task {
                     circuit: request.circuit,
                     id: t.clone().task_id,
-                    witness: t.witness.unwrap(),
                     input: serde_json::to_vec(&t.input).unwrap(),
                     output: t.output.map(|o| serde_json::to_vec(&o).unwrap()),
                 })
