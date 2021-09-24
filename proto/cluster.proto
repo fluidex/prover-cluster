@@ -30,6 +30,8 @@ message Task {
     string id = 1;
     Circuit circuit = 2;
     bytes witness = 3;
+    bytes input = 4;
+    optional bytes output = 5;
 }
 
 message SubmitProofRequest {

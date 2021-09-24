@@ -1,6 +1,6 @@
 use crate::client::Settings;
+use crate::pb::Task;
 use anyhow::{anyhow, bail};
-use fluidex_common::db::models::task;
 use std::collections::HashMap;
 use std::fs::File;
 use std::io::prelude::*;
@@ -28,36 +28,23 @@ impl Witness {
         Ok(Self { circuits })
     }
 
-    pub async fn witgen(&self, task: task::Task) -> Result<Vec<u8>, anyhow::Error> {
-        log::info!("generating witness for task {:?}", task.task_id);
-
+    pub async fn witgen(&self, task: &Task) -> Result<Vec<u8>, anyhow::Error> {
         // create temp dir
         let dir = tempdir().map_err(|_| anyhow!("create tempdir in std::env::temp_dir()"))?;
         log::info!("process in tempdir path: {:?}", dir.path());
 
-        let inputjson = format!("{}", task.input);
-        log::debug!("inputjson content: {:?}", inputjson);
-
         // save inputjson to file
-        let inputjson_filepath = dir.path().join("input.json");
-        log::debug!("inputjson_filepath: {:?}", inputjson_filepath);
-        let mut inputjson_file = File::create(inputjson_filepath.clone()).map_err(|_| anyhow!("create input.json"))?;
-        inputjson_file
-            .write_all(inputjson.as_bytes())
-            .map_err(|_| anyhow!("save input.json"))?;
+        let input_file_path = dir.path().join("input.json");
+        log::debug!("input_file_path: {:?}", input_file_path);
+        let mut inputjson_file = File::create(input_file_path.clone()).map_err(|_| anyhow!("create input.json"))?;
+        inputjson_file.write_all(&task.input).map_err(|_| anyhow!("save input.json"))?;
 
-        // TODO: refactor these clone/ref
-        if let Some(output) = task.clone().output {
-            let outputjson = format!("{}", output);
-            log::debug!("outputjson content: {:?}", outputjson);
-
+        if let Some(output) = &task.output {
             // save outputjson to file
-            let outputjson_filepath = dir.path().join("output.json");
-            log::debug!("outputjson_filepath: {:?}", outputjson_filepath);
-            let mut outputjson_file = File::create(outputjson_filepath).map_err(|_| anyhow!("create output.json"))?;
-            outputjson_file
-                .write_all(outputjson.as_bytes())
-                .map_err(|_| anyhow!("save output.json"))?;
+            let output_file_path = dir.path().join("output.json");
+            log::debug!("output_file_path: {:?}", output_file_path);
+            let mut outputjson_file = File::create(output_file_path).map_err(|_| anyhow!("create output.json"))?;
+            outputjson_file.write_all(output).map_err(|_| anyhow!("save output.json"))?;
         };
 
         let witness_filepath = dir.path().join("witness.wtns");
@@ -74,7 +61,7 @@ impl Witness {
 
         // execute circuit binary & wait for the execution
         Command::new(circuit)
-            .arg(inputjson_filepath.as_os_str())
+            .arg(input_file_path.as_os_str())
             .arg(witness_filepath.as_os_str())
             .status()
             .map_err(|e| anyhow!("failed to execute circuit binary {}", e))?;
@@ -85,7 +72,6 @@ impl Witness {
         // read the whole file
         witness_file.read_to_end(&mut witness).map_err(|_| anyhow!("read witness.wtns"))?;
 
-        log::info!("task (id: {:?}) witness save successfully!", task.task_id);
         Ok(witness)
     }
 }
