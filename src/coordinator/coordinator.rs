@@ -74,7 +74,7 @@ impl Coordinator {
         MIGRATOR.run(&mut db_conn).await?;
 
         // This is only an ad-hoc ATM. In real prod environment we should not reset when starting up, but reset periodically.
-        sqlx::query("update task set status = 'witgened' where status = 'proving'")
+        sqlx::query("update task set status = 'inited' where status = 'proving'")
             .execute(&mut db_conn)
             .await?;
 

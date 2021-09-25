@@ -55,7 +55,7 @@ impl Controller {
             ProvingOrder::Latest => "DESC",
         };
         let query = format!(
-            "select task_id, circuit, block_id, input, output, witness, public_input, proof, status, prover_id, created_time, updated_time
+            "select task_id, circuit, block_id, input, output, public_input, proof, status, prover_id, created_time, updated_time
             from {}
             where circuit = $1 and status = $2
             order by block_id {}",
@@ -64,7 +64,7 @@ impl Controller {
         );
         sqlx::query_as::<_, task::Task>(&query)
             .bind(task::CircuitType::from(circuit))
-            .bind(task::TaskStatus::Witgened)
+            .bind(task::TaskStatus::Inited)
             .fetch_optional(&self.db_pool)
             .await
             .map_err(|e| {
