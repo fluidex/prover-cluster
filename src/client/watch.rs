@@ -16,18 +16,18 @@ pub struct Watcher {
 }
 
 impl Watcher {
-    pub async fn from_config(config: &Settings) -> anyhow::Result<Self> {
+    pub fn from_config(config: &Settings) -> Self {
         let grpc_client = GrpcClient::from_config(config);
         let is_busy = AtomicBool::new(false);
         let prover = Prover::from_config(config);
-        let witness_generator = WitnessGenerator::from_config(&config).await?;
+        let witness_generator = WitnessGenerator::from_config(&config);
 
-        Ok(Self {
+        Self {
             grpc_client,
             is_busy,
             prover,
             witness_generator,
-        })
+        }
     }
 
     pub async fn run(&mut self, mut watch_req: mpsc::Receiver<WatchRequest>) {

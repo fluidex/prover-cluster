@@ -17,7 +17,7 @@ async fn main() {
     log::debug!("{:?}", settings);
 
     let poll_interval = settings.poll_interval();
-    let mut watcher = Watcher::from_config(&settings).await.expect("init watcher error");
+    let mut watcher = Watcher::from_config(&settings);
     let (req_sender, req_receiver) = mpsc::channel(256);
     tokio::spawn(async move { watcher.run(req_receiver).await });
 

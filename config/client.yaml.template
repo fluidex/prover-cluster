@@ -1,13 +1,11 @@
 prover_id: 1
 upstream: "http://[::1]:50055"
 poll_interval: 10000
-circuit: "block"
-r1cs: "${TARGET_CIRCUIT_DIR}/circuit.r1cs"
 srs_monomial_form: "${TARGET_CIRCUIT_DIR}/mon.key"
-srs_lagrange_form: "${TARGET_CIRCUIT_DIR}/lag.key"
-vk: "${TARGET_CIRCUIT_DIR}/vk.bin"
-db: ${DB}
-witgen:
-  interval: ${WITGEN_INTERVAL}
-  circuits:
-    block: "${TARGET_CIRCUIT_DIR}/circuit.fast"
+db: postgres://rollup:rollup_AA9944@127.0.0.1:5433/rollup
+circuit:
+  name: "block"
+  bin: "${TARGET_CIRCUIT_DIR}/circuit.fast"
+  r1cs: "${TARGET_CIRCUIT_DIR}/circuit.r1cs"
+  vk: "${TARGET_CIRCUIT_DIR}/vk.bin"
+  srs_lagrange_form: "${TARGET_CIRCUIT_DIR}/lag.key"

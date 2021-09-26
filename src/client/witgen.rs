@@ -1,31 +1,22 @@
 use crate::client::Settings;
-use crate::pb::Task;
+use crate::pb::{self, Task};
 use anyhow::{anyhow, bail};
-use std::collections::HashMap;
 use std::fs::File;
 use std::io::prelude::*;
 use std::io::Write;
-use std::path::Path;
 use std::process::Command;
 use tempfile::tempdir;
 
 #[derive(Debug, Clone)]
 pub struct WitnessGenerator {
-    circuits: HashMap<String, String>,
+    circuit: crate::client::config::Circuit,
 }
 
 impl WitnessGenerator {
-    pub async fn from_config(config: &Settings) -> anyhow::Result<Self> {
-        let circuits = config.witgen.circuits.clone();
-        log::debug!("{:?}", circuits);
-
-        // check file existence
-        for (k, v) in &circuits {
-            log::debug!("circuit:{}, path {}", k, v);
-            assert!(Path::new(v).exists(), "circuit path doesn't exist: {}", v);
+    pub fn from_config(config: &Settings) -> Self {
+        Self {
+            circuit: config.circuit.clone(),
         }
-
-        Ok(Self { circuits })
     }
 
     pub async fn witgen(&self, task: &Task) -> Result<Vec<u8>, anyhow::Error> {
@@ -51,10 +42,12 @@ impl WitnessGenerator {
         log::debug!("witness_filepath: {:?}", witness_filepath);
 
         // decide circuit
-        let circuit_name = format!("{:?}", task.circuit).to_lowercase();
+        let pb_circuit = pb::Circuit::from_i32(task.circuit).unwrap();
+        let db_circuit = fluidex_common::db::models::task::CircuitType::from(pb_circuit);
+        let circuit_name = format!("{:?}", db_circuit).to_lowercase();
         log::debug!("circuit_name: {:?}", circuit_name);
-        let circuit = if let Some(circuit) = self.circuits.get(&circuit_name) {
-            circuit
+        let circuit = if self.circuit.name == circuit_name {
+            &self.circuit.bin
         } else {
             bail!("unknown circuit: {:?}", circuit_name);
         };

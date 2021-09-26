@@ -3,18 +3,22 @@ use crate::pb;
 use anyhow::anyhow;
 use bellman_ce::{
     pairing::bn256::Bn256,
-    plonk::better_cs::{cs::PlonkCsWidth4WithNextStepParams, keys::Proof},
+    plonk::better_cs::{
+        cs::PlonkCsWidth4WithNextStepParams,
+        keys::{Proof, VerificationKey},
+    },
 };
 
 pub struct Prover {
     circuit_type: pb::Circuit,
     r1cs: plonkit::circom_circuit::R1CS<Bn256>,
     setup: plonkit::plonk::SetupForProver<Bn256>,
+    vk: VerificationKey<Bn256, PlonkCsWidth4WithNextStepParams>,
 }
 
 impl Prover {
     pub fn from_config(config: &Settings) -> Self {
-        let r1cs = plonkit::reader::load_r1cs(&config.r1cs);
+        let r1cs = plonkit::reader::load_r1cs(&config.circuit.r1cs);
         let circuit = plonkit::circom_circuit::CircomCircuit {
             r1cs: r1cs.clone(),
             witness: None,
@@ -24,14 +28,15 @@ impl Prover {
         let setup = plonkit::plonk::SetupForProver::prepare_setup_for_prover(
             circuit,
             plonkit::reader::load_key_monomial_form(&config.srs_monomial_form),
-            plonkit::reader::maybe_load_key_lagrange_form(Some(config.srs_lagrange_form.clone())),
+            plonkit::reader::maybe_load_key_lagrange_form(Some(config.circuit.srs_lagrange_form.clone())),
         )
         .expect("setup prepare err");
 
         Self {
-            circuit_type: config.circuit(),
+            circuit_type: config.circuit.clone().into(),
             r1cs,
             setup,
+            vk: plonkit::reader::load_verification_key::<Bn256>(&config.circuit.vk),
         }
     }
 
@@ -49,6 +54,13 @@ impl Prover {
             wire_mapping: None,
             aux_offset: plonkit::plonk::AUX_OFFSET,
         };
-        self.setup.prove(circuit).map_err(|e| anyhow!("{:?}", e))
+        let proof = self.setup.prove(circuit).map_err(|e| anyhow!("{:?}", e))?;
+
+        // in-place verification
+        let res = plonkit::plonk::verify(&self.vk, &proof)?;
+        match res {
+            true => Ok(proof),
+            false => Err(anyhow!("proof fail!")),
+        }
     }
 }
