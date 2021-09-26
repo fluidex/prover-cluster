@@ -19,13 +19,13 @@ impl Settings {
         Duration::from_millis(self.poll_interval)
     }
 
-    // pub fn circuit(&self) -> Circuit {
-    //     let circuit = self.circuit.as_str();
-    //     match circuit {
-    //         "Block" | "block" => Circuit::Block,
-    //         _ => panic!("unknown circuit: {:?}", circuit),
-    //     }
-    // }
+    pub fn circuit(&self) -> crate::pb::Circuit {
+        let circuit = self.circuit.name.as_str();
+        match circuit {
+            "Block" | "block" => crate::pb::Circuit::Block,
+            _ => panic!("unknown circuit: {:?}", circuit),
+        }
+    }
 }
 
 #[derive(Debug, Deserialize, Clone, PartialEq)]
