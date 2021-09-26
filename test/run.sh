@@ -7,7 +7,7 @@ set -uex
 DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" > /dev/null 2>&1 && pwd)"
 REPO_DIR=$DIR/".."
 PLONKIT_DIR=$REPO_DIR/plonkit
-CIRCUIT_DIR=$PLONKIT_DIR/plonkit/test/circuits/simple
+CIRCUIT_DIR=$PLONKIT_DIR/test/circuits/simple
 
 function handle_submodule() {
   git submodule update --init --recursive
@@ -19,7 +19,7 @@ function prepare_circuit() {
   # cd $CIRCUIT_DIR
   # npm i
   snarkit compile $CIRCUIT_DIR --verbose --backend=auto 2>&1 | tee /tmp/snarkit.log
-  plonkit dump-lagrange -c $CIRCUIT_DIR.r1cs -m $PLONKIT_DIR/keys/setup/setup_2^10.key -l $PLONKIT_DIR/keys/setup/setup_2^10.lag.key
+  plonkit dump-lagrange -c $CIRCUIT_DIR/circuit.r1cs -m $PLONKIT_DIR/keys/setup/setup_2^10.key -l $PLONKIT_DIR/keys/setup/setup_2^10.lag.key
 }
 
 function prepare_config() {
