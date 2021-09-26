@@ -18,7 +18,7 @@ impl GrpcClient {
     pub fn from_config(config: &Settings) -> Self {
         Self {
             id: config.prover_id.clone(),
-            circuit: config.circuit(),
+            circuit: config.circuit.into(),
             upstream: config.upstream.clone(),
         }
     }

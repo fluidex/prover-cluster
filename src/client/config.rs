@@ -18,14 +18,6 @@ impl Settings {
     pub fn poll_interval(&self) -> Duration {
         Duration::from_millis(self.poll_interval)
     }
-
-    pub fn circuit(&self) -> crate::pb::Circuit {
-        let circuit = self.circuit.name.as_str();
-        match circuit {
-            "Block" | "block" => crate::pb::Circuit::Block,
-            _ => panic!("unknown circuit: {:?}", circuit),
-        }
-    }
 }
 
 #[derive(Debug, Deserialize, Clone, PartialEq)]
@@ -35,4 +27,13 @@ pub struct Circuit {
     pub r1cs: String,
     pub vk: String,
     pub srs_lagrange_form: String,
+}
+
+impl From<Circuit> for crate::pb::Circuit {
+    fn from(circuit: Circuit) -> Self {
+        match circuit.name.as_str() {
+            "Block" | "block" => crate::pb::Circuit::Block,
+            _ => panic!("unknown circuit: {:?}", circuit),
+        }
+    }
 }
