@@ -25,8 +25,22 @@ function prepare_circuit() {
 }
 
 function prepare_config() {
-  cd $DIR
-  cp *.yaml $REPO_DIR/config/
+  printf 'prover_id: 1
+upstream: "http://[::1]:50055"
+poll_interval: 10000
+circuit: "%s/test/circuits/simple/circuit"
+r1cs: "%s/test/circuits/simple/circuit.r1cs"
+srs_monomial_form: "%s/keys/setup/setup_2^10.key"
+srs_lagrange_form: "%s/keys/setup/setup_2^10.lag.key"
+vk: "%s/test/circuits/simple/vk.bin"
+db: postgres://coordinator:coordinator_AA9944@127.0.0.1:5433/prover_cluster
+witgen:
+  interval: 2500
+  circuits:
+    block: "circuit"' $PLONKIT_DIR $PLONKIT_DIR $PLONKIT_DIR $PLONKIT_DIR $PLONKIT_DIR > $REPO_DIR/config/client.yaml
+
+  printf 'port: 50055
+db: postgres://coordinator:coordinator_AA9944@127.0.0.1:5433/prover_cluster' > $REPO_DIR/config/coordinator.yaml
 }
 
 function restart_docker_compose() {
@@ -50,7 +64,7 @@ function setup() {
 
 function init_task() {
   PROVER_DB="postgres://coordinator:coordinator_AA9944@127.0.0.1:5433/prover_cluster"
-  psql $(PROVER_DB) -c "select status, count(*) from task"
+  psql $PROVER_DB -c "select status, count(*) from task"
 }
 
 function run_bin() {
