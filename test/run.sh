@@ -5,7 +5,8 @@ set -uex
 # see https://github.com/fluidex/fluidex-backend/blob/master/scripts/install_deps.sh
 
 DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" > /dev/null 2>&1 && pwd)"
-PLONKIT_DIR=$DIR/plonkit
+REPO_DIR=$DIR/".."
+PLONKIT_DIR=$REPO_DIR/plonkit
 CIRCUIT_DIR=$PLONKIT_DIR/plonkit/test/circuits/simple
 
 function handle_submodule() {
@@ -21,9 +22,15 @@ function prepare_circuit() {
   plonkit dump-lagrange -c $CIRCUIT_DIR.r1cs -m $PLONKIT_DIR/keys/setup/setup_2^10.key -l $PLONKIT_DIR/keys/setup/setup_2^10.lag.key
 }
 
+function prepare_config() {
+  cd $DIR
+  cp *.yaml $REPO_DIR/config/
+}
+
 function setup() {
   handle_submodule
   prepare_circuit
+  prepare_config
 }
 
 if [[ -z ${AS_RESOURCE+x}  ]]; then
