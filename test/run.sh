@@ -28,14 +28,14 @@ function prepare_config() {
   printf 'prover_id: 1
 upstream: "http://[::1]:50055"
 poll_interval: 10000
-srs_monomial_form: "%d/keys/setup/setup_2^10.key"
+srs_monomial_form: "%s/keys/setup/setup_2^10.key"
 db: postgres://coordinator:coordinator_AA9944@127.0.0.1:5433/prover_cluster
 circuit:
   name: "block"
-  circuit: "%d/test/circuits/simple/circuit.fast"
-  r1cs: "%d/test/circuits/simple/circuit.r1cs"
-  vk: "%d/test/circuits/simple/vk.bin"
-  srs_lagrange_form: "%d/keys/setup/setup_2^10.lag.key"' $PLONKIT_DIR $PLONKIT_DIR $PLONKIT_DIR $PLONKIT_DIR $PLONKIT_DIR > $REPO_DIR/config/client.yaml
+  circuit: "%s/test/circuits/simple/circuit.fast"
+  r1cs: "%s/test/circuits/simple/circuit.r1cs"
+  vk: "%s/test/circuits/simple/vk.bin"
+  srs_lagrange_form: "%s/keys/setup/setup_2^10.lag.key"' $PLONKIT_DIR $PLONKIT_DIR $PLONKIT_DIR $PLONKIT_DIR $PLONKIT_DIR > $REPO_DIR/config/client.yaml
 
   printf 'port: 50055
 db: postgres://coordinator:coordinator_AA9944@127.0.0.1:5433/prover_cluster' > $REPO_DIR/config/coordinator.yaml
