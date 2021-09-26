@@ -11,21 +11,14 @@ use tempfile::tempdir;
 
 #[derive(Debug, Clone)]
 pub struct WitnessGenerator {
-    circuits: HashMap<String, String>,
+    circuit: crate::client::config::Circuit,
 }
 
 impl WitnessGenerator {
     pub async fn from_config(config: &Settings) -> anyhow::Result<Self> {
-        let circuits = config.witgen.circuits.clone();
-        log::debug!("{:?}", circuits);
-
-        // check file existence
-        for (k, v) in &circuits {
-            log::debug!("circuit:{}, path {}", k, v);
-            assert!(Path::new(v).exists(), "circuit path doesn't exist: {}", v);
-        }
-
-        Ok(Self { circuits })
+        let circuit = config.circuit.clone();
+        log::debug!("{:?}", circuit);
+        Ok(Self { circuit: circuit })
     }
 
     pub async fn witgen(&self, task: &Task) -> Result<Vec<u8>, anyhow::Error> {
@@ -53,8 +46,8 @@ impl WitnessGenerator {
         // decide circuit
         let circuit_name = format!("{:?}", task.circuit).to_lowercase();
         log::debug!("circuit_name: {:?}", circuit_name);
-        let circuit = if let Some(circuit) = self.circuits.get(&circuit_name) {
-            circuit
+        let circuit = if self.circuit.name == circuit_name {
+            &self.circuit.bin
         } else {
             bail!("unknown circuit: {:?}", circuit_name);
         };
