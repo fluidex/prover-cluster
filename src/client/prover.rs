@@ -54,9 +54,12 @@ impl Prover {
             wire_mapping: None,
             aux_offset: plonkit::plonk::AUX_OFFSET,
         };
-        let p = self.setup.prove(circuit).map_err(|e| anyhow!("{:?}", e));
-        assert!(plonkit::plonk::verify(&self.vk, &(p.as_ref().unwrap())).unwrap(), "1");
-        assert!(!(plonkit::plonk::verify(&self.vk, &(p.as_ref().unwrap())).unwrap()), "2");
-        p
+        let proof = self.setup.prove(circuit).map_err(|e| anyhow!("{:?}", e))?;
+
+        // TODO:
+        assert!(plonkit::plonk::verify(&self.vk, &proof).unwrap(), "1");
+        assert!(!(plonkit::plonk::verify(&self.vk, &proof).unwrap()), "2");
+
+        Ok(proof)
     }
 }
