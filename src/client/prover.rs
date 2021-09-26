@@ -3,13 +3,17 @@ use crate::pb;
 use anyhow::anyhow;
 use bellman_ce::{
     pairing::bn256::Bn256,
-    plonk::better_cs::{cs::PlonkCsWidth4WithNextStepParams, keys::Proof},
+    plonk::better_cs::{
+        cs::PlonkCsWidth4WithNextStepParams,
+        keys::{Proof, VerificationKey},
+    },
 };
 
 pub struct Prover {
     circuit_type: pb::Circuit,
     r1cs: plonkit::circom_circuit::R1CS<Bn256>,
     setup: plonkit::plonk::SetupForProver<Bn256>,
+    vk: VerificationKey<Bn256, PlonkCsWidth4WithNextStepParams>,
 }
 
 impl Prover {
@@ -32,6 +36,7 @@ impl Prover {
             circuit_type: config.circuit.clone().into(),
             r1cs,
             setup,
+            vk: plonkit::reader::load_verification_key::<Bn256>(&config.circuit.vk),
         }
     }
 
@@ -49,6 +54,9 @@ impl Prover {
             wire_mapping: None,
             aux_offset: plonkit::plonk::AUX_OFFSET,
         };
-        self.setup.prove(circuit).map_err(|e| anyhow!("{:?}", e))
+        let p = self.setup.prove(circuit).map_err(|e| anyhow!("{:?}", e));
+        assert!(plonkit::plonk::verify(&self.vk, &(p.as_ref().unwrap())).unwrap(), "1");
+        assert!(!(plonkit::plonk::verify(&self.vk, &(p.as_ref().unwrap())).unwrap()), "2");
+        p
     }
 }
