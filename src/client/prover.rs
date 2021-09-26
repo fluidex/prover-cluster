@@ -56,9 +56,13 @@ impl Prover {
         };
         let proof = self.setup.prove(circuit).map_err(|e| anyhow!("{:?}", e))?;
 
-        // TODO:
-        assert!(plonkit::plonk::verify(&self.vk, &proof).unwrap(), "1");
-        assert!(!(plonkit::plonk::verify(&self.vk, &proof).unwrap()), "2");
+        // in-place verification
+        // TODO: fix
+        let res = plonkit::plonk::verify(&self.vk, &proof)?;
+        match res {
+            true => log::info!("proof pass!"),
+            false => log::error!("proof error!"),
+        }
 
         Ok(proof)
     }
