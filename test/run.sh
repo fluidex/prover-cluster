@@ -1,6 +1,9 @@
 #!/bin/bash
 set -uex
 
+# assume already install: libgmp-dev nasm nlohmann-json3-dev snarkit plonkit
+# see https://github.com/fluidex/fluidex-backend/blob/master/scripts/install_deps.sh
+
 DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" > /dev/null 2>&1 && pwd)"
 PLONKIT_DIR=$DIR/plonkit
 
