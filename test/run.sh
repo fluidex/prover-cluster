@@ -6,14 +6,24 @@ set -uex
 
 DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" > /dev/null 2>&1 && pwd)"
 PLONKIT_DIR=$DIR/plonkit
+CIRCUIT_DIR=$PLONKIT_DIR/plonkit/test/circuits/simple
 
 function handle_submodule() {
   git submodule update --init --recursive
   if [ -z ${CI+x} ]; then git pull --recurse-submodules; fi
 }
 
+
+function prepare_circuit() {
+  # cd $CIRCUIT_DIR
+  # npm i
+  snarkit compile $CIRCUIT_DIR --verbose --backend=auto 2>&1 | tee /tmp/snarkit.log
+  # plonkit
+}
+
 function setup() {
   handle_submodule
+  prepare_circuit
 }
 
 if [[ -z ${AS_RESOURCE+x}  ]]; then
