@@ -64,7 +64,7 @@ function setup() {
 
 function init_task() {
   PROVER_DB="postgres://coordinator:coordinator_AA9944@127.0.0.1:5433/prover_cluster"
-  psql $PROVER_DB -c "select status, count(*) from task"
+  psql $PROVER_DB -c "select count(*) from task"
 }
 
 function run_bin() {
@@ -82,6 +82,7 @@ function run_all() {
 }
 
 if [[ -z ${AS_RESOURCE+x}  ]]; then
+  . $DIR/stop.sh
   setup
   run_all
 fi
