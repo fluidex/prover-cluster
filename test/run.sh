@@ -27,6 +27,19 @@ function prepare_config() {
   cp *.yaml $REPO_DIR/config/
 }
 
+function restart_docker_compose() {
+  dir=$1
+  name=$2
+  docker-compose --file $dir/docker/docker-compose.yaml --project-name $name down --remove-orphans
+  docker_rm -rf $dir/docker/data
+  docker_rm -rf $dir/docker/volumes
+  docker-compose --file $dir/docker/docker-compose.yaml --project-name $name up --force-recreate --detach
+}
+
+function run_docker_compose() {
+  restart_docker_compose $REPO_DIR/docker prover_cluster
+}
+
 function setup() {
   handle_submodule
   prepare_circuit
