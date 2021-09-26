@@ -1,6 +1,6 @@
 use crate::client::Settings;
-use crate::pb::Task;
-use anyhow::anyhow;
+use crate::pb::{self, Task};
+use anyhow::{anyhow, bail};
 use std::fs::File;
 use std::io::prelude::*;
 use std::io::Write;
@@ -42,14 +42,15 @@ impl WitnessGenerator {
         log::debug!("witness_filepath: {:?}", witness_filepath);
 
         // decide circuit
-        // let circuit_name = format!("{:?}", task.circuit).to_lowercase();
-        // log::debug!("circuit_name: {:?}", circuit_name);
-        // let circuit = if self.circuit.name == circuit_name {
-        //     &self.circuit.bin
-        // } else {
-        //     bail!("unknown circuit: {:?}", circuit_name);
-        // };
-        let circuit = &self.circuit.bin;
+        let pb_circuit = pb::Circuit::from_i32(task.circuit).unwrap();
+        let db_circuit = fluidex_common::db::models::task::CircuitType::from(pb_circuit);
+        let circuit_name = format!("{:?}", db_circuit).to_lowercase();
+        log::debug!("circuit_name: {:?}", circuit_name);
+        let circuit = if self.circuit.name == circuit_name {
+            &self.circuit.bin
+        } else {
+            bail!("unknown circuit: {:?}", circuit_name);
+        };
 
         // execute circuit binary & wait for the execution
         Command::new(circuit)
