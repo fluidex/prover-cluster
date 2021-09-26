@@ -14,7 +14,7 @@ pub struct Prover {
 
 impl Prover {
     pub fn from_config(config: &Settings) -> Self {
-        let r1cs = plonkit::reader::load_r1cs(&config.r1cs);
+        let r1cs = plonkit::reader::load_r1cs(&config.circuit.r1cs);
         let circuit = plonkit::circom_circuit::CircomCircuit {
             r1cs: r1cs.clone(),
             witness: None,
@@ -24,12 +24,12 @@ impl Prover {
         let setup = plonkit::plonk::SetupForProver::prepare_setup_for_prover(
             circuit,
             plonkit::reader::load_key_monomial_form(&config.srs_monomial_form),
-            plonkit::reader::maybe_load_key_lagrange_form(Some(config.srs_lagrange_form.clone())),
+            plonkit::reader::maybe_load_key_lagrange_form(Some(config.circuit.srs_lagrange_form.clone())),
         )
         .expect("setup prepare err");
 
         Self {
-            circuit_type: config.circuit(),
+            circuit_type: config.circuit.clone().into(),
             r1cs,
             setup,
         }
