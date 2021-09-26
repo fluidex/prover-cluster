@@ -55,7 +55,7 @@ function run_docker_compose() {
 }
 
 function setup() {
-  # handle_submodule
+  handle_submodule
   prepare_circuit
   prepare_config
 }
