@@ -1,7 +1,6 @@
 use crate::client::Settings;
 use crate::pb::Task;
-use anyhow::{anyhow, bail};
-use std::collections::HashMap;
+use anyhow::anyhow;
 use std::fs::File;
 use std::io::prelude::*;
 use std::io::Write;
@@ -15,7 +14,9 @@ pub struct WitnessGenerator {
 
 impl WitnessGenerator {
     pub fn from_config(config: &Settings) -> Self {
-        Self { circuit: config.circuit.clone() }
+        Self {
+            circuit: config.circuit.clone(),
+        }
     }
 
     pub async fn witgen(&self, task: &Task) -> Result<Vec<u8>, anyhow::Error> {

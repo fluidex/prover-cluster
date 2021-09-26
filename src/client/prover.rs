@@ -57,13 +57,10 @@ impl Prover {
         let proof = self.setup.prove(circuit).map_err(|e| anyhow!("{:?}", e))?;
 
         // in-place verification
-        // TODO: fix
         let res = plonkit::plonk::verify(&self.vk, &proof)?;
         match res {
-            true => log::info!("proof pass!"),
-            false => log::error!("proof error!"),
+            true => Ok(proof),
+            false => Err(anyhow!("proof fail!")),
         }
-
-        Ok(proof)
     }
 }
