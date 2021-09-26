@@ -31,7 +31,7 @@ impl Settings {
 #[derive(Debug, Deserialize, Clone, PartialEq)]
 pub struct Circuit {
     pub name: String,
-    pub circuit: String,
+    pub bin: String,
     pub r1cs: String,
     pub vk: String,
     pub srs_lagrange_form: String,
