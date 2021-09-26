@@ -5,7 +5,6 @@ use std::collections::HashMap;
 use std::fs::File;
 use std::io::prelude::*;
 use std::io::Write;
-use std::path::Path;
 use std::process::Command;
 use tempfile::tempdir;
 
@@ -15,10 +14,8 @@ pub struct WitnessGenerator {
 }
 
 impl WitnessGenerator {
-    pub async fn from_config(config: &Settings) -> anyhow::Result<Self> {
-        let circuit = config.circuit.clone();
-        log::debug!("{:?}", circuit);
-        Ok(Self { circuit: circuit })
+    pub fn from_config(config: &Settings) -> Self {
+        Self { circuit: config.circuit.clone() }
     }
 
     pub async fn witgen(&self, task: &Task) -> Result<Vec<u8>, anyhow::Error> {
