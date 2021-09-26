@@ -18,7 +18,7 @@ function prepare_circuit() {
   # cd $CIRCUIT_DIR
   # npm i
   snarkit compile $CIRCUIT_DIR --verbose --backend=auto 2>&1 | tee /tmp/snarkit.log
-  # plonkit
+  plonkit dump-lagrange -c $CIRCUIT_DIR.r1cs -m $PLONKIT_DIR/keys/setup/setup_2^10.key -l $PLONKIT_DIR/keys/setup/setup_2^10.lag.key
 }
 
 function setup() {
