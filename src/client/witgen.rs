@@ -44,13 +44,14 @@ impl WitnessGenerator {
         log::debug!("witness_filepath: {:?}", witness_filepath);
 
         // decide circuit
-        let circuit_name = format!("{:?}", task.circuit).to_lowercase();
-        log::debug!("circuit_name: {:?}", circuit_name);
-        let circuit = if self.circuit.name == circuit_name {
-            &self.circuit.bin
-        } else {
-            bail!("unknown circuit: {:?}", circuit_name);
-        };
+        // let circuit_name = format!("{:?}", task.circuit).to_lowercase();
+        // log::debug!("circuit_name: {:?}", circuit_name);
+        // let circuit = if self.circuit.name == circuit_name {
+        //     &self.circuit.bin
+        // } else {
+        //     bail!("unknown circuit: {:?}", circuit_name);
+        // };
+        let circuit = &self.circuit.bin;
 
         // execute circuit binary & wait for the execution
         Command::new(circuit)

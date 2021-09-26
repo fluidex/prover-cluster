@@ -68,8 +68,8 @@ function init_task() {
 function run_bin() {
   cd $REPO_DIR
   cargo build
-  nohup $REPO_DIR/target/debug/coordinator >> $REPO_DIR/coordinator.$CURRENTDATE.log 2>&1 &
-  nohup $REPO_DIR/target/debug/client >> $REPO_DIR/client.$CURRENTDATE.log 2>&1 &
+  nohup $REPO_DIR/target/debug/coordinator > $REPO_DIR/coordinator.$CURRENTDATE.log 2>&1 &
+  nohup $REPO_DIR/target/debug/client > $REPO_DIR/client.$CURRENTDATE.log 2>&1 &
 }
 
 function run_all() {
