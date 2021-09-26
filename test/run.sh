@@ -18,9 +18,8 @@ function handle_submodule() {
 
 
 function prepare_circuit() {
-  # cd $CIRCUIT_DIR
-  # npm i
   snarkit compile $CIRCUIT_DIR --verbose --backend=auto 2>&1 | tee /tmp/snarkit.log
+  plonkit export-verification-key -c $CIRCUIT_DIR/circuit.r1cs -m $PLONKIT_DIR/keys/setup/setup_2^10.key -v $CIRCUIT_DIR/vk.bin
   plonkit dump-lagrange -c $CIRCUIT_DIR/circuit.r1cs -m $PLONKIT_DIR/keys/setup/setup_2^10.key -l $PLONKIT_DIR/keys/setup/setup_2^10.lag.key
 }
 
