@@ -42,7 +42,10 @@ impl WitnessGenerator {
         log::debug!("witness_filepath: {:?}", witness_filepath);
 
         // decide circuit
-        let pb_circuit = pb::Circuit::from_i32(task.circuit).unwrap();
+        let pb_circuit = match pb::Circuit::from_i32(task.circuit) {
+            Some(c) => c,
+            None => bail!("unknown pb::Circuit: {:?}", task.circuit),
+        };
         let db_circuit = fluidex_common::db::models::task::CircuitType::from(pb_circuit);
         let circuit_name = format!("{:?}", db_circuit).to_lowercase();
         log::debug!("circuit_name: {:?}", circuit_name);
