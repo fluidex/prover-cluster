@@ -29,7 +29,8 @@ message PollTaskRequest {
 message Task {
     string id = 1;
     Circuit circuit = 2;
-    bytes witness = 3;
+    bytes input = 3;
+    optional bytes output = 4;
 }
 
 message SubmitProofRequest {

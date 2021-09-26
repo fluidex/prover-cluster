@@ -6,4 +6,8 @@ r1cs: "${TARGET_CIRCUIT_DIR}/circuit.r1cs"
 srs_monomial_form: "${TARGET_CIRCUIT_DIR}/mon.key"
 srs_lagrange_form: "${TARGET_CIRCUIT_DIR}/lag.key"
 vk: "${TARGET_CIRCUIT_DIR}/vk.bin"
-  
+db: ${DB}
+witgen:
+  interval: ${WITGEN_INTERVAL}
+  circuits:
+    block: "${TARGET_CIRCUIT_DIR}/circuit.fast"

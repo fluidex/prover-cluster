@@ -1,5 +1,6 @@
 use crate::pb::*;
 use serde::Deserialize;
+use std::collections::HashMap;
 use std::time::Duration;
 
 #[derive(Debug, Deserialize, Clone, PartialEq)]
@@ -11,6 +12,8 @@ pub struct Settings {
     pub r1cs: String,
     pub srs_monomial_form: String,
     pub srs_lagrange_form: String,
+    pub db: String,
+    pub witgen: WitGen,
 }
 
 impl Settings {
@@ -26,4 +29,9 @@ impl Settings {
             _ => panic!("unknown circuit: {:?}", circuit),
         }
     }
+}
+
+#[derive(Debug, Deserialize, Clone, PartialEq)]
+pub struct WitGen {
+    pub circuits: HashMap<String, String>,
 }

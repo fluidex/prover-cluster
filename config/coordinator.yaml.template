@@ -1,9 +1,2 @@
 port: ${PORT}
 db: ${DB}
-witgen:
-  interval: ${WITGEN_INTERVAL}
-  n_workers: ${N_WORKERS}
-  max_ready_tasks: 1000
-  proved_clear_after: 172800
-  circuits:
-    block: "${TARGET_CIRCUIT_DIR}/circuit.fast"

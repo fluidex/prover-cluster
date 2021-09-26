@@ -1,14 +1,10 @@
 use fluidex_common::non_blocking_tracing;
 use futures::{channel::mpsc, SinkExt};
-use prover_cluster::client::{
-    config,
-    watch::{WatchRequest, Watcher},
-};
-use tokio::{runtime::Runtime, time};
+use prover_cluster::client::config;
+use prover_cluster::client::watch::{WatchRequest, Watcher};
 
-fn main() {
-    let /*mut*/ main_runtime = Runtime::new().expect("main runtime start");
-
+#[tokio::main]
+async fn main() {
     dotenv::dotenv().ok();
     let _guard = non_blocking_tracing::setup();
     log::info!("prover client started");
@@ -20,25 +16,24 @@ fn main() {
     let settings: config::Settings = conf.try_into().unwrap();
     log::debug!("{:?}", settings);
 
-    let watcher = Watcher::from_config(&settings);
-    let (req_sender, req_receiver) = mpsc::channel(256);
-    main_runtime.spawn(watcher.run(req_receiver));
     let poll_interval = settings.poll_interval();
-    main_runtime.block_on(async move {
+    let mut watcher = Watcher::from_config(&settings).await.expect("init watcher error");
+    let (req_sender, req_receiver) = mpsc::channel(256);
+    tokio::spawn(async move { watcher.run(req_receiver).await });
+
+    req_sender
+        .clone()
+        .send(WatchRequest::Register)
+        .await
+        .expect("watch receiver dropped");
+
+    let mut timer = tokio::time::interval(poll_interval);
+    loop {
+        timer.tick().await;
         req_sender
             .clone()
-            .send(WatchRequest::Register)
+            .send(WatchRequest::PollTask)
             .await
             .expect("watch receiver dropped");
-
-        let mut timer = time::interval(poll_interval);
-        loop {
-            timer.tick().await;
-            req_sender
-                .clone()
-                .send(WatchRequest::PollTask)
-                .await
-                .expect("watch receiver dropped");
-        }
-    });
+    }
 }
