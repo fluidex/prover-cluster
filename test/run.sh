@@ -9,6 +9,8 @@ REPO_DIR=$DIR/".."
 PLONKIT_DIR=$REPO_DIR/plonkit
 CIRCUIT_DIR=$PLONKIT_DIR/test/circuits/simple
 
+CURRENTDATE=$(date +"%Y-%m-%d")
+
 function handle_submodule() {
   git submodule update --init --recursive
   if [ -z ${CI+x} ]; then git pull --recurse-submodules; fi
@@ -46,8 +48,23 @@ function setup() {
   prepare_config
 }
 
+function init_task() {
+  PROVER_DB="postgres://coordinator:coordinator_AA9944@127.0.0.1:5433/prover_cluster"
+  psql $(PROVER_DB) -c "select status, count(*) from task"
+}
+
+function run_bin() {
+  cd $REPO_DIR
+  cargo build
+  nohup $REPO_DIR/target/debug/coordinator >> $REPO_DIR/coordinator.$CURRENTDATE.log 2>&1 &
+  nohup $REPO_DIR/target/debug/client >> $REPO_DIR/client.$CURRENTDATE.log 2>&1 &
+}
+
 function run_all() {
   run_docker_compose
+  run_bin
+  sleep 3
+  init_task
 }
 
 if [[ -z ${AS_RESOURCE+x}  ]]; then
