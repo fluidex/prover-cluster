@@ -38,7 +38,7 @@ jobs:
         run: git submodule update --init --recursive
 
       - name: Install system dependencies
-        run:  sudo apt install cmake librdkafka-dev libpq-dev cpulimit pkg-config libssl-dev nlohmann-json3-dev nasm gcc g++ libgmp-dev postgresql-client-12
+        run:  sudo apt install nlohmann-json3-dev nasm libgmp-dev postgresql-client-12
 
       - name: Install Rust toolchain
         uses: actions-rs/toolchain@v1
@@ -75,8 +75,6 @@ jobs:
         run: |
           npm install -g snarkit
           cargo install --git https://github.com/fluidex/plonkit
-          cargo install sqlx-cli
-          cargo install envsub
 
       - name: Setup sccache
         run: |
