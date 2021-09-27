@@ -84,7 +84,7 @@ function run_all() {
   run_bin
   sleep 5
   init_task
-  sleep 5
+  sleep 10
   validate_task
 }
 
