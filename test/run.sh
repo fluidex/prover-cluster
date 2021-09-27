@@ -66,10 +66,11 @@ function init_task() {
 
 function validate_task() {
   PROVER_DB="postgres://coordinator:coordinator_AA9944@127.0.0.1:5433/prover_cluster"
+  # Validate if Task ID of `task_1` is returned as proved.
   if psql $PROVER_DB -f $DIR/mock_sqls/validate.sql | grep -q 'task_1'; then
     echo "Task is proved"
   else
-    echo "An error occurred"
+    echo "No proved task ID of task_1 is returned"
     exit 1
   fi
 }
