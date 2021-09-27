@@ -64,6 +64,13 @@ function init_task() {
   psql $PROVER_DB -f $DIR/init.sql
 }
 
+function validate_task() {
+  PROVER_DB="postgres://coordinator:coordinator_AA9944@127.0.0.1:5433/prover_cluster"
+  psql $PROVER_DB -f $DIR/validate.sql
+  # for test
+  exit 1
+}
+
 function run_bin() {
   cd $REPO_DIR
   cargo build
@@ -73,9 +80,12 @@ function run_bin() {
 
 function run_all() {
   run_docker_compose
+  sleep 5
   run_bin
-  sleep 3
+  sleep 5
   init_task
+  sleep 5
+  validate_task
 }
 
 if [[ -z ${AS_RESOURCE+x}  ]]; then
