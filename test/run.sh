@@ -66,9 +66,12 @@ function init_task() {
 
 function validate_task() {
   PROVER_DB="postgres://coordinator:coordinator_AA9944@127.0.0.1:5433/prover_cluster"
-  psql $PROVER_DB -f $DIR/mock_sqls/validate.sql
-  # for test
-  exit 1
+  if psql $PROVER_DB -f $DIR/mock_sqls/validate.sql | grep -q 'task_1'; then
+    echo "Task is proved"
+  else
+    echo "An error occurred"
+    exit 1
+  fi
 }
 
 function run_bin() {
