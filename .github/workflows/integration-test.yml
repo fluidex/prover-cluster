@@ -53,14 +53,6 @@ jobs:
         with:
           node-version: '16'
 
-      - name: Install CLI tools
-        run: |
-          npm install -g snarkit
-          npm install -g ganache-cli
-          cargo install --git https://github.com/fluidex/plonkit
-          cargo install sqlx-cli
-          cargo install envsub
-
       - name: Cache cargo registry
         uses: actions/cache@v2
         with:
@@ -78,6 +70,13 @@ jobs:
         with:
           path: target
           key: ${{ runner.os }}-cargo-build-target-${{ hashFiles('**/Cargo.lock') }}
+
+      - name: Install CLI tools
+        run: |
+          npm install -g snarkit
+          cargo install --git https://github.com/fluidex/plonkit
+          cargo install sqlx-cli
+          cargo install envsub
 
       - name: Setup sccache
         run: |
