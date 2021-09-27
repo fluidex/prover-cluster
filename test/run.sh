@@ -16,7 +16,6 @@ function handle_submodule() {
   if [ -z ${CI+x} ]; then git pull --recurse-submodules; fi
 }
 
-
 function prepare_circuit() {
   snarkit compile $CIRCUIT_DIR --verbose --backend=auto 2>&1 | tee /tmp/snarkit.log
   plonkit export-verification-key -c $CIRCUIT_DIR/circuit.r1cs -m $PLONKIT_DIR/keys/setup/setup_2^10.key -v $CIRCUIT_DIR/vk.bin  
