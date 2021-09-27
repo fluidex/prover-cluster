@@ -61,12 +61,12 @@ function setup() {
 
 function init_task() {
   PROVER_DB="postgres://coordinator:coordinator_AA9944@127.0.0.1:5433/prover_cluster"
-  psql $PROVER_DB -f $DIR/init.sql
+  psql $PROVER_DB -f $DIR/mock_sqls/init.sql
 }
 
 function validate_task() {
   PROVER_DB="postgres://coordinator:coordinator_AA9944@127.0.0.1:5433/prover_cluster"
-  psql $PROVER_DB -f $DIR/validate.sql
+  psql $PROVER_DB -f $DIR/mock_sqls/validate.sql
   # for test
   exit 1
 }
