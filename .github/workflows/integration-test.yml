@@ -1,0 +1,92 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - master
+      - prod
+      - release/*
+  pull_request:
+    branches:
+      - master
+      - prod
+      - release/*
+
+env:
+  SCCACHE_REGION: ap-northeast-1
+  SCCACHE_BUCKET: ff-building
+  SCCACHE_S3_USE_SSL: true
+  SCCACHE_S3_KEY_PREFIX: sccache-gh-action
+  AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+  AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+  CARGO_INCREMENTAL: false
+
+jobs:
+  integration-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      matrix:
+        rust:
+          - 1.53.0
+
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@v2
+
+      - name: Pull git submodule
+        run: git submodule update --init --recursive
+
+      - name: Install system dependencies
+        run:  sudo apt install nlohmann-json3-dev nasm libgmp-dev postgresql-client-12
+
+      - name: Install Rust toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: 1.53.0
+          override: true
+          components: rustfmt, clippy
+
+      - name: Install Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '16'
+
+      - name: Cache cargo registry
+        uses: actions/cache@v2
+        with:
+          path: ~/.cargo/registry
+          key: ${{ runner.os }}-cargo-registry-${{ hashFiles('**/Cargo.lock') }}
+
+      - name: Cache cargo index
+        uses: actions/cache@v2
+        with:
+          path: ~/.cargo/git
+          key: ${{ runner.os }}-cargo-index-${{ hashFiles('**/Cargo.lock') }}
+
+      - name: Cache cargo target
+        uses: actions/cache@v2
+        with:
+          path: target
+          key: ${{ runner.os }}-cargo-build-target-${{ hashFiles('**/Cargo.lock') }}
+
+      - name: Install CLI tools
+        run: |
+          npm install -g snarkit
+          cargo install --git https://github.com/fluidex/plonkit
+
+      - name: Setup sccache
+        run: |
+          cd $RUNNER_TEMP
+          export NAME="sccache-v0.2.15-x86_64-unknown-linux-musl"
+          curl -fsSOL https://github.com/mozilla/sccache/releases/download/v0.2.15/$NAME.tar.gz
+          tar xzf $NAME.tar.gz
+          mkdir -p ~/.cargo/bin
+          mv ./$NAME/sccache ~/.cargo/bin
+          chmod +x ~/.cargo/bin/sccache
+          printf "[build]\nrustc-wrapper = \"/home/runner/.cargo/bin/sccache\"" >> ~/.cargo/config
+          ~/.cargo/bin/sccache -s
+
+      - name: Run Test
+        run: bash test/run.sh

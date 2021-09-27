@@ -16,12 +16,11 @@ function handle_submodule() {
   if [ -z ${CI+x} ]; then git pull --recurse-submodules; fi
 }
 
-
 function prepare_circuit() {
   snarkit compile $CIRCUIT_DIR --verbose --backend=auto 2>&1 | tee /tmp/snarkit.log
-  plonkit export-verification-key -c $CIRCUIT_DIR/circuit.r1cs -m $PLONKIT_DIR/keys/setup/setup_2^10.key -v $CIRCUIT_DIR/vk.bin  
+  plonkit export-verification-key -c $CIRCUIT_DIR/circuit.r1cs -m $PLONKIT_DIR/keys/setup/setup_2^10.key -v $CIRCUIT_DIR/vk.bin --overwrite
   cd $PLONKIT_DIR; git update-index --assume-unchanged $CIRCUIT_DIR/vk.bin
-  plonkit dump-lagrange -c $CIRCUIT_DIR/circuit.r1cs -m $PLONKIT_DIR/keys/setup/setup_2^10.key -l $PLONKIT_DIR/keys/setup/setup_2^10.lag.key
+  plonkit dump-lagrange -c $CIRCUIT_DIR/circuit.r1cs -m $PLONKIT_DIR/keys/setup/setup_2^10.key -l $PLONKIT_DIR/keys/setup/setup_2^10.lag.key --overwrite
 }
 
 function prepare_config() {
@@ -62,7 +61,18 @@ function setup() {
 
 function init_task() {
   PROVER_DB="postgres://coordinator:coordinator_AA9944@127.0.0.1:5433/prover_cluster"
-  psql $PROVER_DB -f $DIR/mock.sql
+  psql $PROVER_DB -f $DIR/mock_sqls/init.sql
+}
+
+function validate_task() {
+  PROVER_DB="postgres://coordinator:coordinator_AA9944@127.0.0.1:5433/prover_cluster"
+  # Validate if Task ID of `task_1` is returned as proved.
+  if psql $PROVER_DB -f $DIR/mock_sqls/validate.sql | grep -q 'task_1'; then
+    echo "Task is proved"
+  else
+    echo "No proved task with ID of task_1 is returned"
+    exit 1
+  fi
 }
 
 function run_bin() {
@@ -74,9 +84,12 @@ function run_bin() {
 
 function run_all() {
   run_docker_compose
+  sleep 5
   run_bin
-  sleep 3
+  sleep 5
   init_task
+  sleep 15
+  validate_task
 }
 
 if [[ -z ${AS_RESOURCE+x}  ]]; then
