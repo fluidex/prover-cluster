@@ -70,7 +70,7 @@ function validate_task() {
   if psql $PROVER_DB -f $DIR/mock_sqls/validate.sql | grep -q 'task_1'; then
     echo "Task is proved"
   else
-    echo "No proved task ID of task_1 is returned"
+    echo "No proved task with ID of task_1 is returned"
     exit 1
   fi
 }
