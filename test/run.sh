@@ -93,7 +93,5 @@ function run_all() {
 }
 
 if [[ -z ${AS_RESOURCE+x}  ]]; then
-  . $DIR/stop.sh
-  setup
-  run_all
+  exit 1
 fi
