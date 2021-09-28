@@ -1,19 +1,14 @@
 use crate::client::Settings;
 use crate::pb;
 use anyhow::anyhow;
-use bellman_ce::{
-    pairing::bn256::Bn256,
-    plonk::better_cs::{
-        cs::PlonkCsWidth4WithNextStepParams,
-        keys::{Proof, VerificationKey},
-    },
-};
+use bellman_ce::pairing::bn256::Bn256;
+use bellman_ce::plonk::better_cs::cs::PlonkCsWidth4WithNextStepParams;
+use bellman_ce::plonk::better_cs::keys::Proof;
 
 pub struct Prover {
     circuit_type: pb::Circuit,
     r1cs: plonkit::circom_circuit::R1CS<Bn256>,
     setup: plonkit::plonk::SetupForProver<Bn256>,
-    vk: VerificationKey<Bn256, PlonkCsWidth4WithNextStepParams>,
 }
 
 impl Prover {
@@ -36,7 +31,6 @@ impl Prover {
             circuit_type: config.circuit.clone().into(),
             r1cs,
             setup,
-            vk: plonkit::reader::load_verification_key::<Bn256>(&config.circuit.vk),
         }
     }
 
@@ -54,13 +48,6 @@ impl Prover {
             wire_mapping: None,
             aux_offset: plonkit::plonk::AUX_OFFSET,
         };
-        let proof = self.setup.prove(circuit).map_err(|e| anyhow!("{:?}", e))?;
-
-        // in-place verification
-        let res = plonkit::plonk::verify(&self.vk, &proof)?;
-        match res {
-            true => Ok(proof),
-            false => Err(anyhow!("proof fail!")),
-        }
+        self.setup.prove(circuit).map_err(|e| anyhow!("{:?}", e))
     }
 }

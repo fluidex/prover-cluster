@@ -24,6 +24,12 @@ pub struct Settings {
     pub listenaddr: String,
     pub port: u64,
     pub db: String,
+    pub circuit: Circuit,
     #[serde(default)]
     pub proving_order: ProvingOrder,
+}
+
+#[derive(Debug, Deserialize, Clone, PartialEq)]
+pub struct Circuit {
+    pub vk: String,
 }

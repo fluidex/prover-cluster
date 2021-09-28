@@ -1,5 +1,8 @@
-use crate::coordinator::config::*;
+use crate::coordinator::config;
 use crate::pb::*;
+use bellman_ce::pairing::bn256::Bn256;
+use bellman_ce::plonk::better_cs::cs::PlonkCsWidth4WithNextStepParams;
+use bellman_ce::plonk::better_cs::keys::{Proof, VerificationKey};
 use fluidex_common::db::models::{tablenames, task};
 use fluidex_common::db::{DbType, PoolOptions};
 use tonic::{Code, Status};
@@ -7,16 +10,18 @@ use tonic::{Code, Status};
 #[derive(Debug)]
 pub struct Controller {
     db_pool: sqlx::Pool<DbType>,
-    proving_order: ProvingOrder,
+    proving_order: config::ProvingOrder,
+    vk: VerificationKey<Bn256, PlonkCsWidth4WithNextStepParams>,
     // tasks: BTreeMap<String, Task>, // use cache if we meet performance bottle neck
 }
 
 impl Controller {
-    pub async fn from_config(config: &Settings) -> anyhow::Result<Self> {
+    pub async fn from_config(config: &config::Settings) -> anyhow::Result<Self> {
         let db_pool = PoolOptions::new().connect(&config.db).await?;
         Ok(Self {
             db_pool,
             proving_order: config.proving_order,
+            vk: plonkit::reader::load_verification_key::<Bn256>(&config.circuit.vk),
             // tasks: BTreeMap::new(),
         })
     }
@@ -51,8 +56,8 @@ impl Controller {
 
     async fn query_idle_task(&mut self, circuit: Circuit) -> Result<Option<task::Task>, Status> {
         let order = match self.proving_order {
-            ProvingOrder::Oldest => "ASC",
-            ProvingOrder::Latest => "DESC",
+            config::ProvingOrder::Oldest => "ASC",
+            config::ProvingOrder::Latest => "DESC",
         };
         let query = format!(
             "select task_id, circuit, block_id, input, output, public_input, proof, status, prover_id, created_time, updated_time
@@ -74,10 +79,12 @@ impl Controller {
     }
 
     pub async fn submit_proof(&mut self, req: SubmitProofRequest) -> Result<SubmitProofResponse, Status> {
-        // TODO: validate proof
+        let proof = Proof::<Bn256, PlonkCsWidth4WithNextStepParams>::read(req.proof.as_slice()).unwrap();
+        if !plonkit::plonk::verify(&self.vk, &proof).unwrap() {
+            return Ok(SubmitProofResponse { valid: false });
+        }
 
-        self.store_proof(req).await.unwrap();
-
+        self.store_proof(req, proof).await.unwrap();
         Ok(SubmitProofResponse { valid: true })
     }
 
@@ -95,7 +102,11 @@ impl Controller {
     }
 
     // Failure is acceptable here. We can re-assign the task to another prover later.
-    async fn store_proof(&mut self, req: SubmitProofRequest) -> anyhow::Result<()> {
+    async fn store_proof(&mut self, req: SubmitProofRequest, proof: Proof<Bn256, PlonkCsWidth4WithNextStepParams>) -> anyhow::Result<()> {
+        let (public_input, proof) = bellman_vk_codegen::serialize_proof(&proof);
+        let public_input = serde_json::ser::to_vec(&public_input)?;
+        let proof = serde_json::ser::to_vec(&proof)?;
+
         let stmt = format!(
             "update {} set public_input = $1, proof = $2, prover_id = $3, status = $4 where task_id = $5",
             tablenames::TASK
@@ -103,8 +114,8 @@ impl Controller {
         let mut prover_id = req.prover_id.clone();
         prover_id.truncate(30);
         sqlx::query(&stmt)
-            .bind(req.public_input)
-            .bind(req.proof)
+            .bind(public_input)
+            .bind(proof)
             .bind(prover_id)
             .bind(task::TaskStatus::Proved)
             .bind(req.task_id)

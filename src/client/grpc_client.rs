@@ -61,13 +61,13 @@ impl GrpcClient {
         task_id: &str,
         proof: Proof<Bn256, PlonkCsWidth4WithNextStepParams>,
     ) -> Result<SubmitProofResponse, anyhow::Error> {
-        let (public_input, serialized_proof) = bellman_vk_codegen::serialize_proof(&proof);
+        let mut proof_buffer = vec![];
+        proof.write(&mut proof_buffer).unwrap();
         let mut client = ClusterClient::connect(self.upstream.clone()).await?;
         let request = tonic::Request::new(SubmitProofRequest {
             prover_id: self.id.clone(),
             task_id: task_id.to_string(),
-            public_input: serde_json::ser::to_vec(&public_input).unwrap(),
-            proof: serde_json::ser::to_vec(&serialized_proof).unwrap(),
+            proof: proof_buffer,
             timestamp: chrono::Utc::now().timestamp_millis(),
         });
 
