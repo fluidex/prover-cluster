@@ -91,7 +91,7 @@ impl Controller {
         let vk = self
             .circuits
             .get(&pb_circuit)
-            .expect(&format!("Uninitialized Circuit {:?} in Config file", pb_circuit));
+            .unwrap_or_else(|| panic!("Uninitialized Circuit {:?} in Config file", pb_circuit));
 
         if !plonkit::plonk::verify(&vk, &proof).unwrap() {
             return Ok(SubmitProofResponse { valid: false });
