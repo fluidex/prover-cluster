@@ -14,7 +14,7 @@ use tonic::{Code, Status};
 pub struct Controller {
     db_pool: sqlx::Pool<DbType>,
     proving_order: config::ProvingOrder,
-    circuits: HashMap<pbCircuit, Circuit>,
+    circuits: HashMap<String, Circuit>,
     // tasks: BTreeMap<String, Task>, // use cache if we meet performance bottle neck
 }
 
@@ -29,7 +29,7 @@ impl Controller {
         let mut circuits = HashMap::new();
         for (name, circuit) in &config.circuits {
             circuits.insert(
-                pbCircuit::Block,
+                name.clone(),
                 Circuit {
                     vk: plonkit::reader::load_verification_key::<Bn256>(&circuit.vk),
                 },
@@ -101,7 +101,7 @@ impl Controller {
         let proof = Proof::<Bn256, PlonkCsWidth4WithNextStepParams>::read(req.proof.as_slice()).unwrap();
         let circuit = self
             .circuits
-            .get(&pb_circuit)
+            .get(pb_circuit.to_str())
             .unwrap_or_else(|| panic!("Uninitialized Circuit {:?} in Config file", pb_circuit));
 
         if !plonkit::plonk::verify(&circuit.vk, &proof).unwrap() {
