@@ -36,8 +36,9 @@ message Task {
 message SubmitProofRequest {
     string prover_id = 1;
     string task_id = 2;
-    bytes proof = 3;
-    int64 timestamp = 4; // UTC timestamp in milliseconds
+    Circuit circuit = 3;
+    bytes proof = 4;
+    int64 timestamp = 5; // UTC timestamp in milliseconds
 }
 
 message SubmitProofResponse {

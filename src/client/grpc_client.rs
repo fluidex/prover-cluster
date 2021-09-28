@@ -67,6 +67,7 @@ impl GrpcClient {
         let request = tonic::Request::new(SubmitProofRequest {
             prover_id: self.id.clone(),
             task_id: task_id.to_string(),
+            circuit: self.circuit as i32,
             proof: proof_buffer,
             timestamp: chrono::Utc::now().timestamp_millis(),
         });

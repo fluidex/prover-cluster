@@ -5,23 +5,30 @@ use bellman_ce::plonk::better_cs::cs::PlonkCsWidth4WithNextStepParams;
 use bellman_ce::plonk::better_cs::keys::{Proof, VerificationKey};
 use fluidex_common::db::models::{tablenames, task};
 use fluidex_common::db::{DbType, PoolOptions};
+use std::collections::HashMap;
 use tonic::{Code, Status};
 
 #[derive(Debug)]
 pub struct Controller {
     db_pool: sqlx::Pool<DbType>,
     proving_order: config::ProvingOrder,
-    vk: VerificationKey<Bn256, PlonkCsWidth4WithNextStepParams>,
+    circuits: HashMap<Circuit, VerificationKey<Bn256, PlonkCsWidth4WithNextStepParams>>,
     // tasks: BTreeMap<String, Task>, // use cache if we meet performance bottle neck
 }
 
 impl Controller {
     pub async fn from_config(config: &config::Settings) -> anyhow::Result<Self> {
         let db_pool = PoolOptions::new().connect(&config.db).await?;
+        let mut circuits = HashMap::new();
+        circuits.insert(
+            Circuit::Block,
+            plonkit::reader::load_verification_key::<Bn256>(&config.circuits.block.vk),
+        );
+
         Ok(Self {
             db_pool,
             proving_order: config.proving_order,
-            vk: plonkit::reader::load_verification_key::<Bn256>(&config.circuit.vk),
+            circuits: circuits,
             // tasks: BTreeMap::new(),
         })
     }
@@ -79,8 +86,14 @@ impl Controller {
     }
 
     pub async fn submit_proof(&mut self, req: SubmitProofRequest) -> Result<SubmitProofResponse, Status> {
+        let pb_circuit = Circuit::from_i32(req.circuit).unwrap();
         let proof = Proof::<Bn256, PlonkCsWidth4WithNextStepParams>::read(req.proof.as_slice()).unwrap();
-        if !plonkit::plonk::verify(&self.vk, &proof).unwrap() {
+        let vk = self
+            .circuits
+            .get(&pb_circuit)
+            .expect(&format!("Uninitialized Circuit {:?} in Config file", pb_circuit));
+
+        if !plonkit::plonk::verify(&vk, &proof).unwrap() {
             return Ok(SubmitProofResponse { valid: false });
         }
 

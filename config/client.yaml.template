@@ -7,5 +7,4 @@ circuit:
   name: "block"
   bin: "${TARGET_CIRCUIT_DIR}/circuit.fast"
   r1cs: "${TARGET_CIRCUIT_DIR}/circuit.r1cs"
-  vk: "${TARGET_CIRCUIT_DIR}/vk.bin"
   srs_lagrange_form: "${TARGET_CIRCUIT_DIR}/lag.key"

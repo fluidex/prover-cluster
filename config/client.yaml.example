@@ -7,5 +7,4 @@ circuit:
   name: "block"
   bin: "circuit.fast"
   r1cs: "circuit.r1cs"
-  vk: "vk.bin"
   srs_lagrange_form: "setup_2^20_lagrange.key"
