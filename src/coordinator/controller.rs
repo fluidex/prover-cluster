@@ -28,7 +28,7 @@ impl Controller {
         Ok(Self {
             db_pool,
             proving_order: config.proving_order,
-            circuits: circuits,
+            circuits,
             // tasks: BTreeMap::new(),
         })
     }
