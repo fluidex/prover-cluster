@@ -14,8 +14,13 @@ use tonic::{Code, Status};
 pub struct Controller {
     db_pool: sqlx::Pool<DbType>,
     proving_order: config::ProvingOrder,
-    circuits: HashMap<pbCircuit, VerificationKey<Bn256, PlonkCsWidth4WithNextStepParams>>,
+    circuits: HashMap<pbCircuit, Circuit>,
     // tasks: BTreeMap<String, Task>, // use cache if we meet performance bottle neck
+}
+
+#[derive(Debug)]
+pub struct Circuit {
+    vk: VerificationKey<Bn256, PlonkCsWidth4WithNextStepParams>,
 }
 
 impl Controller {
@@ -23,7 +28,12 @@ impl Controller {
         let db_pool = PoolOptions::new().connect(&config.db).await?;
         let mut circuits = HashMap::new();
         for (name, circuit) in &config.circuits {
-            circuits.insert(pbCircuit::Block, plonkit::reader::load_verification_key::<Bn256>(&circuit.vk));
+            circuits.insert(
+                pbCircuit::Block,
+                Circuit {
+                    vk: plonkit::reader::load_verification_key::<Bn256>(&circuit.vk),
+                },
+            );
         }
 
         Ok(Self {
@@ -89,12 +99,12 @@ impl Controller {
     pub async fn submit_proof(&mut self, req: SubmitProofRequest) -> Result<SubmitProofResponse, Status> {
         let pb_circuit = pbCircuit::from_i32(req.circuit).unwrap();
         let proof = Proof::<Bn256, PlonkCsWidth4WithNextStepParams>::read(req.proof.as_slice()).unwrap();
-        let vk = self
+        let circuit = self
             .circuits
             .get(&pb_circuit)
             .unwrap_or_else(|| panic!("Uninitialized Circuit {:?} in Config file", pb_circuit));
 
-        if !plonkit::plonk::verify(&vk, &proof).unwrap() {
+        if !plonkit::plonk::verify(&circuit.vk, &proof).unwrap() {
             return Ok(SubmitProofResponse { valid: false });
         }
 
