@@ -39,8 +39,7 @@ circuit:
   printf 'port: 50055
 db: postgres://coordinator:coordinator_AA9944@127.0.0.1:5433/prover_cluster
 circuit:
-  vk: "%s/test/circuits/simple/vk.bin"
-' > $REPO_DIR/config/coordinator.yaml
+  vk: "%s/test/circuits/simple/vk.bin"' > $REPO_DIR/config/coordinator.yaml
 }
 
 function restart_docker_compose() {
