@@ -29,7 +29,7 @@ impl Controller {
         let mut circuits = HashMap::new();
         for (name, circuit) in &config.circuits {
             circuits.insert(
-                name.clone(),
+                name.to_lowercase(),
                 Circuit {
                     vk: plonkit::reader::load_verification_key::<Bn256>(&circuit.vk),
                 },
