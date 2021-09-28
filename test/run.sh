@@ -33,11 +33,13 @@ circuit:
   name: "block"
   bin: "%s/test/circuits/simple/circuit.fast"
   r1cs: "%s/test/circuits/simple/circuit.r1cs"
-  vk: "%s/test/circuits/simple/vk.bin"
-  srs_lagrange_form: "%s/keys/setup/setup_2^10.lag.key"' $PLONKIT_DIR $PLONKIT_DIR $PLONKIT_DIR $PLONKIT_DIR $PLONKIT_DIR > $REPO_DIR/config/client.yaml
+  srs_lagrange_form: "%s/keys/setup/setup_2^10.lag.key"' $PLONKIT_DIR $PLONKIT_DIR $PLONKIT_DIR $PLONKIT_DIR > $REPO_DIR/config/client.yaml
 
   printf 'port: 50055
-db: postgres://coordinator:coordinator_AA9944@127.0.0.1:5433/prover_cluster' > $REPO_DIR/config/coordinator.yaml
+db: postgres://coordinator:coordinator_AA9944@127.0.0.1:5433/prover_cluster
+circuits:
+  block:
+    vk: "%s/test/circuits/simple/vk.bin"' $PLONKIT_DIR > $REPO_DIR/config/coordinator.yaml
 }
 
 function restart_docker_compose() {

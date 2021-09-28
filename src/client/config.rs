@@ -23,7 +23,6 @@ pub struct Circuit {
     pub name: String,
     pub bin: String,
     pub r1cs: String,
-    pub vk: String,
     pub srs_lagrange_form: String,
 }
 

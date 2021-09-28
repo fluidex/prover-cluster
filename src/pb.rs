@@ -9,3 +9,12 @@ impl From<Circuit> for CircuitType {
         }
     }
 }
+
+impl Circuit {
+    pub fn to_str(self) -> &'static str {
+        match self {
+            Self::Block => "block",
+            // _ => "unknown circuit",
+        }
+    }
+}

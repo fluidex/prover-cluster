@@ -1,22 +1,45 @@
-use crate::coordinator::config::*;
-use crate::pb::*;
+use crate::coordinator::config;
+use crate::pb::{
+    Circuit as pbCircuit, PollTaskRequest, RegisterRequest, RegisterResponse, SubmitProofRequest, SubmitProofResponse, Task as pbTask,
+};
+use bellman_ce::pairing::bn256::Bn256;
+use bellman_ce::plonk::better_cs::cs::PlonkCsWidth4WithNextStepParams;
+use bellman_ce::plonk::better_cs::keys::{Proof, VerificationKey};
 use fluidex_common::db::models::{tablenames, task};
 use fluidex_common::db::{DbType, PoolOptions};
+use std::collections::HashMap;
 use tonic::{Code, Status};
 
 #[derive(Debug)]
 pub struct Controller {
     db_pool: sqlx::Pool<DbType>,
-    proving_order: ProvingOrder,
+    proving_order: config::ProvingOrder,
+    circuits: HashMap<String, Circuit>,
     // tasks: BTreeMap<String, Task>, // use cache if we meet performance bottle neck
 }
 
+#[derive(Debug)]
+pub struct Circuit {
+    vk: VerificationKey<Bn256, PlonkCsWidth4WithNextStepParams>,
+}
+
 impl Controller {
-    pub async fn from_config(config: &Settings) -> anyhow::Result<Self> {
+    pub async fn from_config(config: &config::Settings) -> anyhow::Result<Self> {
         let db_pool = PoolOptions::new().connect(&config.db).await?;
+        let mut circuits = HashMap::new();
+        for (name, circuit) in &config.circuits {
+            circuits.insert(
+                name.to_lowercase(),
+                Circuit {
+                    vk: plonkit::reader::load_verification_key::<Bn256>(&circuit.vk),
+                },
+            );
+        }
+
         Ok(Self {
             db_pool,
             proving_order: config.proving_order,
+            circuits,
             // tasks: BTreeMap::new(),
         })
     }
@@ -27,8 +50,8 @@ impl Controller {
         })
     }
 
-    pub async fn poll_task(&mut self, request: PollTaskRequest) -> Result<Task, Status> {
-        let circuit = Circuit::from_i32(request.circuit).ok_or_else(|| Status::new(Code::InvalidArgument, "unknown circuit"))?;
+    pub async fn poll_task(&mut self, request: PollTaskRequest) -> Result<pbTask, Status> {
+        let circuit = pbCircuit::from_i32(request.circuit).ok_or_else(|| Status::new(Code::InvalidArgument, "unknown circuit"))?;
 
         let task = self.query_idle_task(circuit).await?;
         log::debug!("{:?}", task);
@@ -39,7 +62,7 @@ impl Controller {
 
                 // self.tasks.remove(&t.task_id);
                 self.assign_task(t.clone().task_id, request.prover_id).await.unwrap();
-                Ok(Task {
+                Ok(pbTask {
                     circuit: request.circuit,
                     id: t.clone().task_id,
                     input: serde_json::to_vec(&t.input).unwrap(),
@@ -49,10 +72,10 @@ impl Controller {
         }
     }
 
-    async fn query_idle_task(&mut self, circuit: Circuit) -> Result<Option<task::Task>, Status> {
+    async fn query_idle_task(&mut self, circuit: pbCircuit) -> Result<Option<task::Task>, Status> {
         let order = match self.proving_order {
-            ProvingOrder::Oldest => "ASC",
-            ProvingOrder::Latest => "DESC",
+            config::ProvingOrder::Oldest => "ASC",
+            config::ProvingOrder::Latest => "DESC",
         };
         let query = format!(
             "select task_id, circuit, block_id, input, output, public_input, proof, status, prover_id, created_time, updated_time
@@ -74,10 +97,18 @@ impl Controller {
     }
 
     pub async fn submit_proof(&mut self, req: SubmitProofRequest) -> Result<SubmitProofResponse, Status> {
-        // TODO: validate proof
+        let pb_circuit = pbCircuit::from_i32(req.circuit).unwrap();
+        let proof = Proof::<Bn256, PlonkCsWidth4WithNextStepParams>::read(req.proof.as_slice()).unwrap();
+        let circuit = self
+            .circuits
+            .get(pb_circuit.to_str())
+            .unwrap_or_else(|| panic!("Uninitialized Circuit {:?} in Config file", pb_circuit));
 
-        self.store_proof(req).await.unwrap();
+        if !plonkit::plonk::verify(&circuit.vk, &proof).unwrap() {
+            return Ok(SubmitProofResponse { valid: false });
+        }
 
+        self.store_proof(req, proof).await.unwrap();
         Ok(SubmitProofResponse { valid: true })
     }
 
@@ -95,7 +126,11 @@ impl Controller {
     }
 
     // Failure is acceptable here. We can re-assign the task to another prover later.
-    async fn store_proof(&mut self, req: SubmitProofRequest) -> anyhow::Result<()> {
+    async fn store_proof(&mut self, req: SubmitProofRequest, proof: Proof<Bn256, PlonkCsWidth4WithNextStepParams>) -> anyhow::Result<()> {
+        let (public_input, proof) = bellman_vk_codegen::serialize_proof(&proof);
+        let public_input = serde_json::ser::to_vec(&public_input)?;
+        let proof = serde_json::ser::to_vec(&proof)?;
+
         let stmt = format!(
             "update {} set public_input = $1, proof = $2, prover_id = $3, status = $4 where task_id = $5",
             tablenames::TASK
@@ -103,8 +138,8 @@ impl Controller {
         let mut prover_id = req.prover_id.clone();
         prover_id.truncate(30);
         sqlx::query(&stmt)
-            .bind(req.public_input)
-            .bind(req.proof)
+            .bind(public_input)
+            .bind(proof)
             .bind(prover_id)
             .bind(task::TaskStatus::Proved)
             .bind(req.task_id)

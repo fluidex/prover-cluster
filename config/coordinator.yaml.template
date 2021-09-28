@@ -1,2 +1,5 @@
 port: ${PORT}
 db: ${DB}
+circuits:
+  block:
+    vk: "${TARGET_CIRCUIT_DIR}/vk.bin"

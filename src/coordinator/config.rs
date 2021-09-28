@@ -1,4 +1,5 @@
 use serde::{Deserialize, Serialize};
+use std::collections::HashMap;
 use std::default::Default;
 
 fn default_addr() -> String {
@@ -24,6 +25,12 @@ pub struct Settings {
     pub listenaddr: String,
     pub port: u64,
     pub db: String,
+    pub circuits: HashMap<String, Circuit>,
     #[serde(default)]
     pub proving_order: ProvingOrder,
+}
+
+#[derive(Debug, Deserialize, Clone, PartialEq)]
+pub struct Circuit {
+    pub vk: String,
 }

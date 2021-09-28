@@ -1,2 +1,5 @@
 port: 50055
 db: postgres://rollup:rollup_AA9944@127.0.0.1:5433/rollup
+circuits:
+  block:
+    vk: "vk.bin"
