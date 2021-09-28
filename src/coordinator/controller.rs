@@ -1,5 +1,7 @@
 use crate::coordinator::config;
-use crate::pb::*;
+use crate::pb::{
+    Circuit as pbCircuit, PollTaskRequest, RegisterRequest, RegisterResponse, SubmitProofRequest, SubmitProofResponse, Task as pbTask,
+};
 use bellman_ce::pairing::bn256::Bn256;
 use bellman_ce::plonk::better_cs::cs::PlonkCsWidth4WithNextStepParams;
 use bellman_ce::plonk::better_cs::keys::{Proof, VerificationKey};
@@ -12,7 +14,7 @@ use tonic::{Code, Status};
 pub struct Controller {
     db_pool: sqlx::Pool<DbType>,
     proving_order: config::ProvingOrder,
-    circuits: HashMap<Circuit, VerificationKey<Bn256, PlonkCsWidth4WithNextStepParams>>,
+    circuits: HashMap<pbCircuit, VerificationKey<Bn256, PlonkCsWidth4WithNextStepParams>>,
     // tasks: BTreeMap<String, Task>, // use cache if we meet performance bottle neck
 }
 
@@ -20,10 +22,9 @@ impl Controller {
     pub async fn from_config(config: &config::Settings) -> anyhow::Result<Self> {
         let db_pool = PoolOptions::new().connect(&config.db).await?;
         let mut circuits = HashMap::new();
-        circuits.insert(
-            Circuit::Block,
-            plonkit::reader::load_verification_key::<Bn256>(&config.circuits.block.vk),
-        );
+        for (name, circuit) in &config.circuits {
+            circuits.insert(pbCircuit::Block, plonkit::reader::load_verification_key::<Bn256>(&circuit.vk));
+        }
 
         Ok(Self {
             db_pool,
@@ -39,8 +40,8 @@ impl Controller {
         })
     }
 
-    pub async fn poll_task(&mut self, request: PollTaskRequest) -> Result<Task, Status> {
-        let circuit = Circuit::from_i32(request.circuit).ok_or_else(|| Status::new(Code::InvalidArgument, "unknown circuit"))?;
+    pub async fn poll_task(&mut self, request: PollTaskRequest) -> Result<pbTask, Status> {
+        let circuit = pbCircuit::from_i32(request.circuit).ok_or_else(|| Status::new(Code::InvalidArgument, "unknown circuit"))?;
 
         let task = self.query_idle_task(circuit).await?;
         log::debug!("{:?}", task);
@@ -51,7 +52,7 @@ impl Controller {
 
                 // self.tasks.remove(&t.task_id);
                 self.assign_task(t.clone().task_id, request.prover_id).await.unwrap();
-                Ok(Task {
+                Ok(pbTask {
                     circuit: request.circuit,
                     id: t.clone().task_id,
                     input: serde_json::to_vec(&t.input).unwrap(),
@@ -61,7 +62,7 @@ impl Controller {
         }
     }
 
-    async fn query_idle_task(&mut self, circuit: Circuit) -> Result<Option<task::Task>, Status> {
+    async fn query_idle_task(&mut self, circuit: pbCircuit) -> Result<Option<task::Task>, Status> {
         let order = match self.proving_order {
             config::ProvingOrder::Oldest => "ASC",
             config::ProvingOrder::Latest => "DESC",
@@ -86,7 +87,7 @@ impl Controller {
     }
 
     pub async fn submit_proof(&mut self, req: SubmitProofRequest) -> Result<SubmitProofResponse, Status> {
-        let pb_circuit = Circuit::from_i32(req.circuit).unwrap();
+        let pb_circuit = pbCircuit::from_i32(req.circuit).unwrap();
         let proof = Proof::<Bn256, PlonkCsWidth4WithNextStepParams>::read(req.proof.as_slice()).unwrap();
         let vk = self
             .circuits
