@@ -104,7 +104,7 @@ impl Controller {
             .get(pb_circuit.to_str())
             .unwrap_or_else(|| panic!("Uninitialized Circuit {:?} in Config file", pb_circuit));
 
-        if !plonkit::plonk::verify(&circuit.vk, &proof).unwrap() {
+        if !plonkit::plonk::verify(&circuit.vk, &proof, "keccak").unwrap() {
             return Ok(SubmitProofResponse { valid: false });
         }
 
