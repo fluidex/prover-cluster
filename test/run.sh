@@ -71,9 +71,10 @@ function validate_task() {
   # Validate if Task ID of `task_1` is returned as proved.
   if psql $PROVER_DB -f $DIR/mock_sqls/validate.sql | grep -q 'task_1'; then
     echo "Task is proved"
+    if [ ${CI+x} ]; then return 0; fi
   else
     echo "No proved task with ID of task_1 is returned"
-    exit 1
+    if [ ${CI+x} ]; then return 1; else exit 1; fi
   fi
 }
 
@@ -84,14 +85,28 @@ function run_bin() {
   nohup $REPO_DIR/target/debug/client > $REPO_DIR/client.$CURRENTDATE.log 2>&1 &
 }
 
+function retry_cmd_until_ok() {
+  set +e
+  $@
+  while [[ $? -ne 0 ]]; do
+    sleep 3
+    $@
+  done
+  set -e
+}
+
 function run_all() {
   run_docker_compose
   sleep 5
   run_bin
   sleep 5
   init_task
-  sleep 15
-  validate_task
+  if [ -z ${CI+x} ]; then
+    sleep 15
+    validate_task
+  else
+    retry_cmd_until_ok validate_task
+  fi
 }
 
 if [[ -z ${AS_RESOURCE+x}  ]]; then
