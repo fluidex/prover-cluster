@@ -74,11 +74,7 @@ function validate_task() {
     if [ ${CI+x} ]; then return 0; fi
   else
     echo "No proved task with ID of task_1 is returned"
-    if [ ${CI+x} ]; then
-      return 1
-    else
-      exit 1
-    fi
+    if [ ${CI+x} ]; then return 1; else exit 1; fi
   fi
 }
 
