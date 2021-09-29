@@ -7,7 +7,6 @@ pub struct Settings {
     pub upstream: String,
     pub poll_interval: u64,
     pub srs_monomial_form: String,
-    pub db: String,
     pub circuit: Circuit,
 }
 

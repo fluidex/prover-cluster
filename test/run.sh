@@ -28,7 +28,6 @@ function prepare_config() {
 upstream: "http://[::1]:50055"
 poll_interval: 10000
 srs_monomial_form: "%s/keys/setup/setup_2^10.key"
-db: postgres://coordinator:coordinator_AA9944@127.0.0.1:5433/prover_cluster
 circuit:
   name: "block"
   bin: "%s/test/circuits/simple/circuit.fast"
