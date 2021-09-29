@@ -8,7 +8,7 @@ use bellman_ce::plonk::better_cs::keys::Proof;
 pub struct Prover {
     circuit_type: pb::Circuit,
     r1cs: plonkit::circom_circuit::R1CS<Bn256>,
-    setup: plonkit::plonk::SetupForProver<Bn256>,
+    setup: plonkit::plonk::SetupForProver,
 }
 
 impl Prover {
@@ -48,6 +48,6 @@ impl Prover {
             wire_mapping: None,
             aux_offset: plonkit::plonk::AUX_OFFSET,
         };
-        self.setup.prove(circuit).map_err(|e| anyhow!("{:?}", e))
+        self.setup.prove(circuit, "keccak").map_err(|e| anyhow!("{:?}", e))
     }
 }
