@@ -71,10 +71,14 @@ function validate_task() {
   # Validate if Task ID of `task_1` is returned as proved.
   if psql $PROVER_DB -f $DIR/mock_sqls/validate.sql | grep -q 'task_1'; then
     echo "Task is proved"
-    return 0
+    if [ ${CI+x} ]; then return 0; fi
   else
     echo "No proved task with ID of task_1 is returned"
-    return 1
+    if [ ${CI+x} ]; then
+      return 1
+    else
+      exit 1
+    fi
   fi
 }
 
@@ -101,7 +105,12 @@ function run_all() {
   run_bin
   sleep 5
   init_task
-  retry_cmd_until_ok validate_task
+  if [ -z ${CI+x} ]; then
+    sleep 15
+    validate_task
+  else
+    retry_cmd_until_ok validate_task
+  fi
 }
 
 if [[ -z ${AS_RESOURCE+x}  ]]; then
