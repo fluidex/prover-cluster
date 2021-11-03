@@ -20,7 +20,7 @@ impl Watcher {
         let grpc_client = GrpcClient::from_config(config);
         let is_busy = AtomicBool::new(false);
         let prover = Prover::from_config(config);
-        let witness_generator = WitnessGenerator::from_config(&config);
+        let witness_generator = WitnessGenerator::from_config(config);
 
         Self {
             grpc_client,
