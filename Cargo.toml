@@ -2,7 +2,7 @@
 name = "prover-cluster"
 version = "0.1.0"
 authors = [ "HAOYUatHZ <haoyu@protonmail.com>" ]
-edition = "2018"
+edition = "2021"
 
 [dependencies]
 anyhow = "1.0"
