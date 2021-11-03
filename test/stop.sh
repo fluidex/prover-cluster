@@ -18,7 +18,7 @@ function stop_docker_compose() {
   sudo rm -rf $dir/docker/volumes
 }
 
-if [[ -z ${AS_RESOURCE+x}  ]]; then
+if [[ -z ${AS_RESOURCE+x} ]]; then
   kill_tasks
   stop_docker_compose $REPO_DIR prover_cluster
 fi

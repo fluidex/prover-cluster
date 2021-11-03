@@ -11,6 +11,16 @@ CIRCUIT_DIR=$PLONKIT_DIR/test/circuits/simple
 
 CURRENTDATE=$(date +"%Y-%m-%d")
 
+function checkCPU() {
+  for f in bmi2 adx; do
+    (cat /proc/cpuinfo | grep flags | head -n 1 | grep $f) || (
+      echo 'invalid cpu'
+      cat /proc/cpuinfo
+      exit 1
+    )
+  done
+}
+
 function handle_submodule() {
   git submodule update --init --recursive
   if [ -z ${CI+x} ]; then git pull --recurse-submodules; fi
@@ -19,7 +29,8 @@ function handle_submodule() {
 function prepare_circuit() {
   snarkit compile $CIRCUIT_DIR --verbose --backend=auto 2>&1 | tee /tmp/snarkit.log
   plonkit export-verification-key -c $CIRCUIT_DIR/circuit.r1cs -m $PLONKIT_DIR/keys/setup/setup_2^10.key -v $CIRCUIT_DIR/vk.bin --overwrite
-  cd $PLONKIT_DIR; git update-index --assume-unchanged $CIRCUIT_DIR/vk.bin
+  cd $PLONKIT_DIR
+  git update-index --assume-unchanged $CIRCUIT_DIR/vk.bin
   plonkit dump-lagrange -c $CIRCUIT_DIR/circuit.r1cs -m $PLONKIT_DIR/keys/setup/setup_2^10.key -l $PLONKIT_DIR/keys/setup/setup_2^10.lag.key --overwrite
 }
 
@@ -108,8 +119,9 @@ function run_all() {
   fi
 }
 
-if [[ -z ${AS_RESOURCE+x}  ]]; then
+if [[ -z ${AS_RESOURCE+x} ]]; then
   . $DIR/stop.sh
+  checkCPU # fail fast
   setup
   run_all
 fi
