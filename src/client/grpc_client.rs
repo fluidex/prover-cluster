@@ -6,6 +6,7 @@ use bellman_ce::{
     pairing::bn256::Bn256,
     plonk::better_cs::{cs::PlonkCsWidth4WithNextStepParams, keys::Proof},
 };
+use tonic::Code;
 
 #[derive(Clone)]
 pub struct GrpcClient {
@@ -40,7 +41,7 @@ impl GrpcClient {
         }
     }
 
-    pub async fn poll_task(&self) -> Result<Task, anyhow::Error> {
+    pub async fn poll_task(&self) -> Result<Option<Task>, anyhow::Error> {
         let mut client = ClusterClient::connect(self.upstream.clone()).await?;
 
         let request = tonic::Request::new(PollTaskRequest {
@@ -51,8 +52,11 @@ impl GrpcClient {
 
         log::info!("prover({}) polling task", self.id);
         match client.poll_task(request).await {
-            Ok(t) => Ok(t.into_inner()),
-            Err(e) => Err(anyhow!(e)),
+            Ok(t) => Ok(Some(t.into_inner())),
+            Err(e) => match e.code() {
+                Code::ResourceExhausted => Ok(None),
+                _ => Err(anyhow!("poll task error: {}", e.message())),
+            },
         }
     }
 
