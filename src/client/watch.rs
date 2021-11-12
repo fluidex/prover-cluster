@@ -50,7 +50,12 @@ impl Watcher {
                     self.is_busy.store(true, Ordering::SeqCst);
 
                     let task = match self.grpc_client.poll_task().await {
-                        Ok(t) => t,
+                        Ok(Some(t)) => t,
+                        Ok(None) => {
+                            log::debug!("no task");
+                            self.is_busy.store(false, Ordering::SeqCst);
+                            continue;
+                        }
                         Err(e) => {
                             log::error!("poll task error {:?}", e);
                             self.is_busy.store(false, Ordering::SeqCst);

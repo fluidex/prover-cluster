@@ -1,8 +1,10 @@
 prover_id: 1
 upstream: "http://cluster_coordinator:50055"
 poll_interval: 10000
-circuit: "block"
-r1cs: "/opt/test/circuit.r1cs"
 srs_monomial_form: "/opt/mon.key"
-srs_lagrange_form: "/opt/test/lag.key"
-vk: "/opt/test/vk.bin"
+circuit:
+  name: "block"
+  bin: "/opt/test/circuit.fast"
+  r1cs: "/opt/test/circuit.r1cs"
+  srs_lagrange_form: "/opt/test/lag.key"
+
