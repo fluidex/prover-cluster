@@ -23,7 +23,7 @@ impl Prover {
         let setup = plonkit::plonk::SetupForProver::prepare_setup_for_prover(
             circuit,
             plonkit::reader::load_key_monomial_form(&config.srs_monomial_form),
-            plonkit::reader::maybe_load_key_lagrange_form(Some(config.circuit.srs_lagrange_form.clone())),
+            plonkit::reader::maybe_load_key_lagrange_form(config.circuit.srs_lagrange_form.clone()),
         )
         .expect("setup prepare err");
 

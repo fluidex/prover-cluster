@@ -22,7 +22,7 @@ pub struct Circuit {
     pub name: String,
     pub bin: String,
     pub r1cs: String,
-    pub srs_lagrange_form: String,
+    pub srs_lagrange_form: Option<String>,
 }
 
 impl From<Circuit> for crate::pb::Circuit {
