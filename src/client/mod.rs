@@ -1,4 +1,4 @@
-pub use config::Settings;
+pub use config::{Circuit, Settings};
 pub use grpc_client::GrpcClient;
 pub use prover::Prover;
 pub use witgen::WitnessGenerator;

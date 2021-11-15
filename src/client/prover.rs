@@ -1,12 +1,11 @@
-use crate::client::Settings;
-use crate::pb;
+use crate::client::{Circuit, Settings};
 use anyhow::anyhow;
 use bellman_ce::pairing::bn256::Bn256;
 use bellman_ce::plonk::better_cs::cs::PlonkCsWidth4WithNextStepParams;
 use bellman_ce::plonk::better_cs::keys::Proof;
 
 pub struct Prover {
-    circuit_type: pb::Circuit,
+    circuit: Circuit,
     r1cs: plonkit::circom_circuit::R1CS<Bn256>,
     setup: plonkit::plonk::SetupForProver,
 }
@@ -28,17 +27,16 @@ impl Prover {
         .expect("setup prepare err");
 
         Self {
-            circuit_type: config.circuit.clone().into(),
+            circuit: config.circuit.clone(),
             r1cs,
             setup,
         }
     }
 
-    pub async fn prove(&self, circuit: i32, witness: Vec<u8>) -> Result<Proof<Bn256, PlonkCsWidth4WithNextStepParams>, anyhow::Error> {
-        if circuit != (self.circuit_type as i32) {
-            log::debug!("circuit_id: {:?}", circuit);
-            log::debug!("circuit parsing result: {:?}", pb::Circuit::from_i32(circuit));
-            return Err(anyhow!("unsupported task circuit!"));
+    pub async fn prove(&self, circuit: &str, witness: Vec<u8>) -> Result<Proof<Bn256, PlonkCsWidth4WithNextStepParams>, anyhow::Error> {
+        if !self.circuit.is_supported(circuit) {
+            log::debug!("unsupported  task circuit: {}", circuit);
+            return Err(anyhow!(format!("unsupported task circuit: {}", circuit)));
         }
 
         let witness = plonkit::reader::load_witness_from_array::<Bn256>(witness).map_err(|e| anyhow!("load witness error: {:?}", e))?;

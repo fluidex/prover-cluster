@@ -1,7 +1,5 @@
 use crate::coordinator::config;
-use crate::pb::{
-    Circuit as pbCircuit, PollTaskRequest, RegisterRequest, RegisterResponse, SubmitProofRequest, SubmitProofResponse, Task as pbTask,
-};
+use crate::pb::{PollTaskRequest, RegisterRequest, RegisterResponse, SubmitProofRequest, SubmitProofResponse, Task as pbTask};
 use bellman_ce::pairing::bn256::Bn256;
 use bellman_ce::plonk::better_cs::cs::PlonkCsWidth4WithNextStepParams;
 use bellman_ce::plonk::better_cs::keys::{Proof, VerificationKey};
@@ -51,9 +49,7 @@ impl Controller {
     }
 
     pub async fn poll_task(&mut self, request: PollTaskRequest) -> Result<pbTask, Status> {
-        let circuit = pbCircuit::from_i32(request.circuit).ok_or_else(|| Status::new(Code::InvalidArgument, "unknown circuit"))?;
-
-        let task = self.query_idle_task(circuit).await?;
+        let task = self.query_idle_task(&request.circuit).await?;
         log::debug!("{:?}", task);
         match task {
             None => Err(Status::new(Code::ResourceExhausted, "no task ready to prove")),
@@ -72,7 +68,7 @@ impl Controller {
         }
     }
 
-    async fn query_idle_task(&mut self, circuit: pbCircuit) -> Result<Option<task::Task>, Status> {
+    async fn query_idle_task(&mut self, circuit: &str) -> Result<Option<task::Task>, Status> {
         let order = match self.proving_order {
             config::ProvingOrder::Oldest => "ASC",
             config::ProvingOrder::Latest => "DESC",
@@ -86,7 +82,7 @@ impl Controller {
             order
         );
         sqlx::query_as::<_, task::Task>(&query)
-            .bind(task::CircuitType::from(circuit))
+            .bind(circuit)
             .bind(task::TaskStatus::Inited)
             .fetch_optional(&self.db_pool)
             .await
@@ -97,12 +93,11 @@ impl Controller {
     }
 
     pub async fn submit_proof(&mut self, req: SubmitProofRequest) -> Result<SubmitProofResponse, Status> {
-        let pb_circuit = pbCircuit::from_i32(req.circuit).unwrap();
         let proof = Proof::<Bn256, PlonkCsWidth4WithNextStepParams>::read(req.proof.as_slice()).unwrap();
         let circuit = self
             .circuits
-            .get(pb_circuit.to_str())
-            .unwrap_or_else(|| panic!("Uninitialized Circuit {:?} in Config file", pb_circuit));
+            .get(&req.circuit)
+            .unwrap_or_else(|| panic!("Uninitialized Circuit {:?} in Config file", req.circuit));
 
         if !plonkit::plonk::verify(&circuit.vk, &proof, "keccak").unwrap() {
             return Ok(SubmitProofResponse { valid: false });

@@ -1,4 +1,4 @@
-use crate::client::Settings;
+use crate::client::{Circuit, Settings};
 use crate::pb::cluster_client::ClusterClient;
 use crate::pb::*;
 use anyhow::anyhow;
@@ -19,7 +19,7 @@ impl GrpcClient {
     pub fn from_config(config: &Settings) -> Self {
         Self {
             id: config.prover_id.clone(),
-            circuit: config.circuit.clone().into(),
+            circuit: config.circuit.clone(),
             upstream: config.upstream.clone(),
         }
     }
@@ -46,7 +46,7 @@ impl GrpcClient {
 
         let request = tonic::Request::new(PollTaskRequest {
             prover_id: self.id.clone(),
-            circuit: self.circuit as i32,
+            circuit: self.circuit.name.clone(),
             timestamp: chrono::Utc::now().timestamp_millis(),
         });
 
@@ -71,7 +71,7 @@ impl GrpcClient {
         let request = tonic::Request::new(SubmitProofRequest {
             prover_id: self.id.clone(),
             task_id: task_id.to_string(),
-            circuit: self.circuit as i32,
+            circuit: self.circuit.name.clone(),
             proof: proof_buffer,
             timestamp: chrono::Utc::now().timestamp_millis(),
         });
