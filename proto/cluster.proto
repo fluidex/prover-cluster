@@ -16,19 +16,15 @@ message RegisterResponse {
     string prover_id = 1;
 }
 
-enum Circuit {
-  BLOCK = 0;
-}
-
 message PollTaskRequest {
     string prover_id = 1;
-    Circuit circuit = 2;
+    string circuit = 2;
     int64 timestamp = 3; // UTC timestamp in milliseconds
 }
 
 message Task {
     string id = 1;
-    Circuit circuit = 2;
+    string circuit = 2;
     bytes input = 3;
     optional bytes output = 4;
 }
@@ -36,7 +32,7 @@ message Task {
 message SubmitProofRequest {
     string prover_id = 1;
     string task_id = 2;
-    Circuit circuit = 3;
+    string circuit = 3;
     bytes proof = 4;
     int64 timestamp = 5; // UTC timestamp in milliseconds
 }
