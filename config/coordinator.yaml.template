@@ -1,5 +1,5 @@
 port: ${PORT}
 db: ${DB}
 circuits:
-  block_${N_TXS}":
+  block_${N_TXS}:
     vk: "${TARGET_CIRCUIT_DIR}/vk.bin"
