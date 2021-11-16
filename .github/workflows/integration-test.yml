@@ -38,7 +38,7 @@ jobs:
         run: git submodule update --init --recursive
 
       - name: Install system dependencies
-        run:  sudo apt install nlohmann-json3-dev nasm libgmp-dev postgresql-client-12
+        run:  sudo apt install nlohmann-json3-dev nasm libgmp-dev postgresql-client-13
 
       - name: Install Rust toolchain
         uses: actions-rs/toolchain@v1
