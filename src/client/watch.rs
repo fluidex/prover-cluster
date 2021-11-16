@@ -72,7 +72,7 @@ impl Watcher {
                         }
                     };
 
-                    match self.prover.prove(task.circuit, witness).await {
+                    match self.prover.prove(&task.circuit, witness).await {
                         Ok(proof) => {
                             let grpc_client = self.grpc_client.clone();
                             tokio::spawn(/*move ||*/ async move {

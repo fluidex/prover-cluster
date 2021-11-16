@@ -25,11 +25,8 @@ pub struct Circuit {
     pub srs_lagrange_form: Option<String>,
 }
 
-impl From<Circuit> for crate::pb::Circuit {
-    fn from(circuit: Circuit) -> Self {
-        match circuit.name.as_str() {
-            "Block" | "block" => crate::pb::Circuit::Block,
-            _ => panic!("unknown circuit: {:?}", circuit),
-        }
+impl Circuit {
+    pub fn is_supported(&self, circuit_type: &str) -> bool {
+        self.name.to_lowercase() == circuit_type.to_lowercase()
     }
 }

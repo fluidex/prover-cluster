@@ -3,7 +3,7 @@ upstream: "http://[::1]:50055"
 poll_interval: 10000
 srs_monomial_form: "${TARGET_CIRCUIT_DIR}/mon.key"
 circuit:
-  name: "block"
+  name: "block_${N_TXS}"
   bin: "${TARGET_CIRCUIT_DIR}/circuit.fast"
   r1cs: "${TARGET_CIRCUIT_DIR}/circuit.r1cs"
   srs_lagrange_form: "${TARGET_CIRCUIT_DIR}/lag.key"
