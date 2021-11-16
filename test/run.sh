@@ -11,6 +11,20 @@ CIRCUIT_DIR=$PLONKIT_DIR/test/circuits/simple
 
 CURRENTDATE=$(date +"%Y-%m-%d")
 
+function install_circom() {
+  export PATH=$PATH:~/bin
+  if which circom
+  then
+    echo 'skip install circom'
+  else
+    mkdir -p ~/bin
+    pushd ~/bin
+    wget https://github.com/fluidex/static_files/raw/master/circom
+    chmod +x circom
+    popd
+  fi
+}
+
 function checkCPU() {
   for f in bmi2 adx; do
     (cat /proc/cpuinfo | grep flags | head -n 1 | grep $f) || (
@@ -27,7 +41,7 @@ function handle_submodule() {
 }
 
 function prepare_circuit() {
-  snarkit compile $CIRCUIT_DIR --verbose --backend=auto 2>&1 | tee /tmp/snarkit.log
+  snarkit2 compile $CIRCUIT_DIR --verbose --backend=auto 2>&1 | tee /tmp/snarkit.log
   plonkit export-verification-key -c $CIRCUIT_DIR/circuit.r1cs -m $PLONKIT_DIR/keys/setup/setup_2^10.key -v $CIRCUIT_DIR/vk.bin --overwrite
   cd $PLONKIT_DIR
   git update-index --assume-unchanged $CIRCUIT_DIR/vk.bin
@@ -41,7 +55,7 @@ poll_interval: 10000
 srs_monomial_form: "%s/keys/setup/setup_2^10.key"
 circuit:
   name: "block"
-  bin: "%s/test/circuits/simple/circuit.fast"
+  bin: "%s/test/circuits/simple/circuit_cpp/circuit"
   r1cs: "%s/test/circuits/simple/circuit.r1cs"' $PLONKIT_DIR $PLONKIT_DIR $PLONKIT_DIR > $REPO_DIR/config/client.yaml
 
   printf 'port: 50055
@@ -121,6 +135,7 @@ function run_all() {
 if [[ -z ${AS_RESOURCE+x} ]]; then
   . $DIR/stop.sh
   checkCPU # fail fast
+  install_circom
   setup
   run_all
 fi

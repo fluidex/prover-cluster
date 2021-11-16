@@ -73,7 +73,7 @@ jobs:
 
       - name: Install CLI tools
         run: |
-          npm install -g snarkit
+          npm install -g snarkit2
           cargo install --git https://github.com/fluidex/plonkit
 
       - name: Setup sccache
