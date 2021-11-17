@@ -103,6 +103,7 @@ impl Controller {
             return Ok(SubmitProofResponse { valid: false });
         }
 
+        self.verify_task(req.clone(), proof.clone()).await.unwrap();
         self.store_proof(req, proof).await.unwrap();
         Ok(SubmitProofResponse { valid: true })
     }
@@ -141,6 +142,34 @@ impl Controller {
             .execute(&self.db_pool)
             .await?;
         Ok(())
+    }
+
+    async fn verify_task(&mut self, req: SubmitProofRequest, proof: Proof<Bn256, PlonkCsWidth4WithNextStepParams>) -> anyhow::Result<()> {
+        let (public_input, proof) = bellman_vk_codegen::serialize_proof(&proof);
+
+        match req.circuit.as_ref() {
+            "block_2" => {
+                unimplemented!()
+            }
+            _ => Ok(()),
+        }
+        // let public_input = serde_json::ser::to_vec(&public_input)?;
+        // let proof = serde_json::ser::to_vec(&proof)?;
+
+        // let stmt = format!(
+        //     "update {} set public_input = $1, proof = $2, prover_id = $3, status = $4 where task_id = $5",
+        //     tablenames::TASK
+        // );
+        // let mut prover_id = req.prover_id.clone();
+        // prover_id.truncate(30);
+        // sqlx::query(&stmt)
+        //     .bind(public_input)
+        //     .bind(proof)
+        //     .bind(prover_id)
+        //     .bind(task::TaskStatus::Proved)
+        //     .bind(req.task_id)
+        //     .execute(&self.db_pool)
+        //     .await?;
     }
 }
 
